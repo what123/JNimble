@@ -1323,6 +1323,17 @@ a {
   font-size: 22px;
 }
 
+.admin-auth__error {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--admin-radius);
+  background: rgba(192, 41, 66, 0.08);
+  border: 1px solid rgba(192, 41, 66, 0.3);
+  color: #c02942;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .admin-auth__form {
   display: grid;
   gap: 14px;

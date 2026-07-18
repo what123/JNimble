@@ -74,10 +74,18 @@ public class AdminHomeController {
     /**
      * Displays the login page.
      *
+     * @param error present when authentication fails; drives the error banner
+     * @param model the view model
      * @return the login template name
      */
     @GetMapping("/login")
-    public String login() {
+    public String login(
+            @org.springframework.web.bind.annotation.RequestParam(value = "error", required = false) String error,
+            Model model
+    ) {
+        if (error != null) {
+            model.addAttribute("loginError", Boolean.TRUE);
+        }
         return "auth/login";
     }
 }

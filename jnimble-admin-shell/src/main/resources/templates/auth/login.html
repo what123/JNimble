@@ -25,6 +25,7 @@
     <header class="admin-auth__header">
       <p class="admin-shell__eyebrow" th:text="#{admin.login.eyebrow}">Secure access</p>
       <h1 id="login-title" th:text="#{admin.login.heading(${site?.nameOrFallback()})}">登录 JNimble Admin</h1>
+      <p class="admin-auth__error" th:if="${loginError}" th:text="#{admin.login.error}">用户名或密码错误</p>
     </header>
 
     <form class="admin-auth__form" th:action="@{/login}" method="post">
