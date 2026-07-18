@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.jnimble.admin.setting.StorageConfigService;
 import com.jnimble.kernel.plugin.PluginRuntimeService;
 import com.jnimble.kernel.plugin.PluginRuntimeSnapshot;
 import com.jnimble.sdk.plugin.PluginStatus;
@@ -32,6 +33,9 @@ class PluginJarInstallServiceTest {
     @Mock
     private PluginRuntimeService pluginRuntimeService;
 
+    @Mock
+    private StorageConfigService storageConfigService;
+
     private PluginInstallProperties properties;
 
     private PluginJarInstallService service;
@@ -43,7 +47,8 @@ class PluginJarInstallServiceTest {
     void setUp() {
         properties = new PluginInstallProperties();
         properties.setDir(tempDir.toString());
-        service = new PluginJarInstallService(pluginRuntimeService, properties);
+        lenient().when(storageConfigService.resolvePluginDir()).thenReturn(tempDir.toString());
+        service = new PluginJarInstallService(pluginRuntimeService, properties, storageConfigService);
     }
 
     /**

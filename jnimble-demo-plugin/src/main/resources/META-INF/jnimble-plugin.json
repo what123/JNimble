@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "id": "demo-plugin",
+  "name": "Demo Plugin",
+  "version": "1.0.0",
+  "platformVersion": "0.1.0",
+  "bootClass": "com.jnimble.demo.DemoPluginBoot",
+  "admin": {
+    "entry": "/index",
+    "labelKey": "demo.plugin.name",
+    "permission": "demo-plugin.view"
+  },
+  "permissions": [
+    {
+      "code": "demo-plugin.view",
+      "name": "查看 Demo 插件",
+      "nameKey": "demo.permission.view"
+    }
+  ]
+}
