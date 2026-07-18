@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>插件详情</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title">插件详情</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow">Plugin</p>
+          <h2 th:text="${plugin != null ? pluginMessages.name(plugin.descriptor()) : selectedPluginId}">插件名称</h2>
+        </div>
+        <div class="admin-actions">
+          <a class="admin-button"
+             th:if="${plugin != null and pluginAdminEntries.get(plugin.pluginId()) != null}"
+             th:href="${pluginAdminEntries.get(plugin.pluginId())}"
+             th:text="${pluginMessages.adminLabel(plugin.descriptor())}">配置</a>
+          <button class="admin-button" type="button"
+                  th:if="${plugin != null and plugin.status().name() != 'ENABLED' and plugin.status().name() != 'UNINSTALLED' and @controllerAuthorization.hasPermission('system.plugins.manage')}"
+                  data-admin-modal-open="plugin-replace-detail-modal">替换插件包</button>
+          <a class="admin-link" th:href="@{/admin/plugins}">返回插件列表</a>
+        </div>
+      </div>
+
+      <div class="admin-notice admin-notice--error" th:if="${error}" th:text="${error}">失败原因。</div>
+
+      <section class="admin-panel" th:if="${plugin == null}">
+        <div class="admin-panel__header">
+          <h2>插件不存在</h2>
+          <p>
+            运行时中找不到
+            <span class="admin-code" th:text="${selectedPluginId}">plugin.id</span>
+            的快照。
+          </p>
+        </div>
+      </section>
+
+      <section class="admin-panel" th:if="${plugin != null}">
+        <dl class="admin-definition-grid">
+          <div class="admin-definition">
+            <dt>ID</dt>
+            <dd th:text="${plugin.pluginId()}">plugin.id</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>状态</dt>
+            <dd><span class="admin-status" th:text="${pluginMessages.status(plugin.status())}">已安装</span></dd>
+          </div>
+          <div class="admin-definition">
+            <dt>版本</dt>
+            <dd th:text="${plugin.descriptor().version()}">0.0.0</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>来源</dt>
+            <dd th:text="${plugin.source()}">CLASSPATH</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>平台版本</dt>
+            <dd th:text="${plugin.descriptor().platformVersion() ?: '-'}">0.1.x</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>启动类</dt>
+            <dd class="admin-break" th:text="${plugin.descriptor().bootClass()}">com.example.PluginBoot</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>贡献数</dt>
+            <dd th:text="${plugin.registrationCount()}">0</dd>
+          </div>
+          <div class="admin-definition admin-definition--wide">
+            <dt>插件包</dt>
+            <dd class="admin-break" th:text="${plugin.artifactPath() ?: '-'}">-</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>安装时间</dt>
+            <dd th:text="${plugin.installedAt() ?: '-'}">-</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>最近启动</dt>
+            <dd th:text="${plugin.lastStartedAt() ?: '-'}">-</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>最近停止</dt>
+            <dd th:text="${plugin.lastStoppedAt() ?: '-'}">-</dd>
+          </div>
+          <div class="admin-definition">
+            <dt>最近错误</dt>
+            <dd class="admin-break" th:text="${plugin.lastError() ?: '-'}">-</dd>
+          </div>
+          <div class="admin-definition admin-definition--wide">
+            <dt>描述</dt>
+            <dd th:text="${pluginMessages.description(plugin.descriptor())}">-</dd>
+          </div>
+        </dl>
+
+        <div class="admin-actions admin-actions--footer"
+             th:if="${@controllerAuthorization.hasPermission('system.plugins.manage')}">
+          <form method="post"
+                th:if="${plugin.status().name() == 'UNINSTALLED'}"
+                th:action="@{/admin/plugins/{pluginId}/install(pluginId=${plugin.pluginId()})}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="admin-button" type="submit">安装</button>
+          </form>
+          <form method="post"
+                th:if="${plugin.status().name() == 'INSTALLED' or plugin.status().name() == 'DISABLED' or plugin.status().name() == 'FAILED' or plugin.status().name() == 'MIGRATION_FAILED'}"
+                th:action="@{/admin/plugins/{pluginId}/enable(pluginId=${plugin.pluginId()})}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="admin-button" type="submit">启用</button>
+          </form>
+          <form method="post"
+                th:if="${plugin.status().name() == 'ENABLED'}"
+                th:action="@{/admin/plugins/{pluginId}/disable(pluginId=${plugin.pluginId()})}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="admin-button admin-button--secondary" type="submit">停用</button>
+          </form>
+          <form method="post"
+                th:if="${plugin.status().name() == 'ENABLED'}"
+                th:action="@{/admin/plugins/{pluginId}/reload(pluginId=${plugin.pluginId()})}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="admin-button admin-button--secondary" type="submit">重载</button>
+          </form>
+          <button class="admin-button admin-button--secondary" type="button"
+                  th:if="${plugin.status().name() != 'UNINSTALLED'}"
+                  data-admin-modal-open="plugin-uninstall-modal"
+                  th:attr="data-admin-modal-action=@{/admin/plugins/{pluginId}/uninstall(pluginId=${plugin.pluginId()})},
+                           data-admin-modal-plugin-id=${plugin.pluginId()},
+                           data-admin-modal-plugin-name=${pluginMessages.name(plugin.descriptor())}">卸载</button>
+        </div>
+      </section>
+
+      <dialog class="admin-modal" id="plugin-uninstall-modal"
+              th:if="${plugin != null and plugin.status().name() != 'UNINSTALLED' and @controllerAuthorization.hasPermission('system.plugins.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2>确认卸载插件</h2>
+              <p>
+                即将卸载
+                <span class="admin-code" data-admin-modal-text="plugin-name">-</span>
+                （<span class="admin-code" data-admin-modal-text="plugin-id">plugin.id</span>）。
+              </p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close aria-label="关闭弹窗">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form" method="post" data-admin-modal-action>
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="admin-risk-panel">
+                <strong>不可逆风险操作</strong>
+                <p>卸载会先停用插件并移除功能入口；勾选清理后会删除插件迁移创建的数据表、字段和迁移历史记录，删除后无法从系统内恢复。</p>
+              </div>
+              <label class="admin-checkbox-field">
+                <input type="checkbox" name="cleanPluginData" value="true">
+                <span>同时清理插件数据表和字段</span>
+              </label>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close>取消</button>
+                <button class="admin-button admin-button--danger" type="submit">确认卸载</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="admin-modal" id="plugin-replace-detail-modal"
+              th:if="${plugin != null and plugin.status().name() != 'ENABLED' and plugin.status().name() != 'UNINSTALLED' and @controllerAuthorization.hasPermission('system.plugins.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2>替换插件包</h2>
+              <p>上传同 ID 的插件包替换当前版本；替换后需要重新启用插件。</p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close aria-label="关闭弹窗">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form" method="post" enctype="multipart/form-data"
+                  th:action="@{/admin/plugins/{pluginId}/replace(pluginId=${plugin.pluginId()})}">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <label>
+                <span>插件包</span>
+                <input type="file" name="jar" accept=".jar" required>
+              </label>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close>取消</button>
+                <button class="admin-button" type="submit">上传替换</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <section class="admin-panel" th:if="${plugin != null}">
+        <div class="admin-panel__header">
+          <h2>生命周期事件</h2>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th>时间</th>
+              <th>阶段</th>
+              <th>原因</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(plugin.events())}">
+              <td colspan="3" class="admin-muted">暂无生命周期事件。</td>
+            </tr>
+            <tr th:each="event : ${plugin.events()}">
+              <td th:text="${event.occurredAt()}">2026-05-17T00:00:00Z</td>
+              <td th:text="${event.phase()}">INSTALLED</td>
+              <td class="admin-break" th:text="${event.reason() ?: '-'}">install</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

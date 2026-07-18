@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN" th:lang="${#locale.toLanguageTag()}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:jn="https://jnimble.com/thymeleaf"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE" th:text="${site?.nameOrFallback() + ' Admin'}">JNimble Admin</title>
+  <link rel="stylesheet" th:href="@{/assets/system/css/admin-shell.css}">
+</head>
+<body class="admin-shell">
+  <div class="admin-shell__frame">
+    <button class="admin-shell__scrim" type="button" tabindex="-1" data-admin-menu-close
+            th:attr="aria-label=#{admin.layout.menu.close}"></button>
+
+    <aside class="admin-shell__sidebar" id="admin-sidebar" th:attr="aria-label=#{admin.layout.navigation}">
+      <button class="admin-shell__menu-close" type="button" data-admin-menu-close
+              th:attr="aria-label=#{admin.layout.menu.close}">
+        <span aria-hidden="true"></span>
+      </button>
+      <a class="admin-shell__brand" th:href="@{/admin}">
+        <th:block th:if="${site != null and site.hasLogo()}">
+          <img class="admin-shell__brand-logo" th:src="${site.logoUrl()}" th:alt="${site.nameOrFallback()}" aria-hidden="true">
+        </th:block>
+        <span class="admin-shell__brand-mark" aria-hidden="true" th:unless="${site != null and site.hasLogo()}">J</span>
+        <span>
+          <strong th:text="${site?.nameOrFallback()}">JNimble</strong>
+          <small th:text="${site?.subtitleOrFallback()}">Operations Console</small>
+        </span>
+      </a>
+
+      <nav class="admin-shell__nav" th:attr="aria-label=#{admin.layout.navigation.primary}">
+        <jn:hook name="admin.layout.sidebar.start" />
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'home'} ? ' admin-shell__nav-item--active' : ''"
+           th:href="@{/admin}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.home}">工作台</span></a>
+        <jn:hook name="admin.layout.sidebar" />
+        <span class="admin-shell__nav-label" th:text="#{admin.layout.section.system}">系统管理</span>
+        <jn:hook name="admin.layout.sidebar.sys.start" />
+        <jn:hook name="admin.layout.sidebar.plugins.before" />
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'plugins'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.plugins.view')}"
+           th:href="@{/admin/plugins}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.plugins}">插件管理</span></a>
+        <jn:hook name="admin.layout.sidebar.plugins.after" />
+        <jn:hook name="admin.layout.sidebar.roles.before" />
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'roles'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.roles.view')}"
+           th:href="@{/admin/roles}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.roles}">角色权限</span></a>
+        <jn:hook name="admin.layout.sidebar.roles.after" />
+        <jn:hook name="admin.layout.sidebar.users.before" />
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'users'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.users.view')}"
+           th:href="@{/admin/users}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.users}">用户管理</span></a>
+        <jn:hook name="admin.layout.sidebar.users.after" />
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'languages'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.languages.view')}"
+           th:href="@{/admin/languages}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.languages}">语言管理</span></a>
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'system-settings'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.settings.view')}"
+           th:href="@{/admin/system-settings}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.systemSettings}">系统设置</span></a>
+        <jn:hook name="admin.layout.sidebar.sys.end" />
+        <jn:hook name="admin.layout.sidebar.end" />
+      </nav>
+    </aside>
+
+    <div class="admin-shell__main">
+      <header class="admin-shell__topbar">
+        <div class="admin-shell__topbar-title">
+          <button class="admin-shell__menu-button" type="button" data-admin-menu-toggle
+                  aria-controls="admin-sidebar" aria-expanded="false"
+                  th:attr="aria-label=#{admin.layout.menu.open},data-menu-open-label=#{admin.layout.menu.open},data-menu-close-label=#{admin.layout.menu.close}">
+            <span class="admin-shell__menu-button-bars" aria-hidden="true"></span>
+            <span th:text="#{admin.layout.menu}">菜单</span>
+          </button>
+          <div>
+            <p class="admin-shell__eyebrow" th:text="#{admin.layout.eyebrow}">后台管理</p>
+            <h1 layout:fragment="page-title">工作台</h1>
+          </div>
+        </div>
+        <div class="admin-shell__topbar-actions">
+          <jn:hook name="admin.layout.topbar" />
+          <th:block th:replace="~{fragment/language-switcher :: switcher}" />
+          <th:block th:replace="~{fragment/user-menu :: menu}" />
+        </div>
+      </header>
+
+      <main class="admin-shell__content" layout:fragment="content">
+      </main>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var shell = document.body;
+      var sidebar = document.getElementById('admin-sidebar');
+      var toggle = document.querySelector('[data-admin-menu-toggle]');
+      var closeButtons = document.querySelectorAll('[data-admin-menu-close]');
+      var desktopQuery = window.matchMedia('(min-width: 821px)');
+
+      if (!toggle) {
+        return;
+      }
+
+      function setMenuOpen(open, moveFocus) {
+        var isDesktop = desktopQuery.matches;
+
+        shell.classList.toggle('admin-shell--menu-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open
+          ? toggle.getAttribute('data-menu-close-label')
+          : toggle.getAttribute('data-menu-open-label'));
+
+        if (sidebar) {
+          if (isDesktop || open) {
+            sidebar.removeAttribute('aria-hidden');
+            sidebar.removeAttribute('inert');
+          } else {
+            sidebar.setAttribute('aria-hidden', 'true');
+            sidebar.setAttribute('inert', '');
+          }
+        }
+
+        if (!moveFocus || isDesktop) {
+          return;
+        }
+
+        if (open && sidebar) {
+          window.setTimeout(function () {
+            var firstControl = sidebar.querySelector('button, a[href]');
+            if (firstControl) {
+              firstControl.focus();
+            }
+          }, 0);
+        } else {
+          toggle.focus();
+        }
+      }
+
+      toggle.addEventListener('click', function () {
+        setMenuOpen(!shell.classList.contains('admin-shell--menu-open'), true);
+      });
+
+      closeButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          setMenuOpen(false, true);
+        });
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && shell.classList.contains('admin-shell--menu-open')) {
+          setMenuOpen(false, true);
+        }
+      });
+
+      var closeOnDesktop = function (event) {
+        if (event.matches) {
+          setMenuOpen(false);
+        } else {
+          setMenuOpen(shell.classList.contains('admin-shell--menu-open'));
+        }
+      };
+
+      if (desktopQuery.addEventListener) {
+        desktopQuery.addEventListener('change', closeOnDesktop);
+      } else {
+        desktopQuery.addListener(closeOnDesktop);
+      }
+
+      setMenuOpen(false);
+    })();
+
+    (function () {
+      function fillModal(modal, trigger) {
+        var form = modal.querySelector('form[data-admin-modal-action]');
+
+        if (form) {
+          form.reset();
+        }
+
+        if (form && trigger.hasAttribute('data-admin-modal-action')) {
+          form.setAttribute('action', trigger.getAttribute('data-admin-modal-action'));
+        }
+
+        modal.querySelectorAll('[data-admin-modal-value]').forEach(function (field) {
+          var key = field.getAttribute('data-admin-modal-value');
+          var value = trigger.getAttribute('data-admin-modal-' + key);
+
+          field.value = value === null ? '' : value;
+        });
+
+        modal.querySelectorAll('input[type="checkbox"][data-admin-modal-checked]').forEach(function (field) {
+          var key = field.getAttribute('data-admin-modal-checked');
+          var rawValue = trigger.getAttribute('data-admin-modal-' + key) || '';
+          var checkedValues = rawValue.split(',').filter(Boolean);
+
+          field.checked = checkedValues.indexOf(field.value) !== -1;
+        });
+
+        modal.querySelectorAll('[data-admin-modal-text]').forEach(function (element) {
+          var key = element.getAttribute('data-admin-modal-text');
+          var value = trigger.getAttribute('data-admin-modal-' + key);
+
+          element.textContent = value === null ? '' : value;
+        });
+
+        modal.querySelectorAll('[data-admin-modal-href]').forEach(function (element) {
+          var key = element.getAttribute('data-admin-modal-href');
+          var value = trigger.getAttribute('data-admin-modal-' + key);
+
+          element.setAttribute('href', value === null ? '#' : value);
+        });
+
+        modal.querySelectorAll('[data-admin-modal-formaction]').forEach(function (element) {
+          var key = element.getAttribute('data-admin-modal-formaction');
+          var value = trigger.getAttribute('data-admin-modal-' + key);
+
+          element.setAttribute('formaction', value === null ? '' : value);
+        });
+      }
+
+      function openModal(modal, trigger) {
+        modal.__adminModalTrigger = trigger;
+
+        if (typeof modal.showModal === 'function') {
+          modal.showModal();
+        } else {
+          modal.setAttribute('open', '');
+        }
+
+        window.setTimeout(function () {
+          var firstControl = modal.querySelector('.admin-modal__body input:not([type="hidden"]):not([disabled]), .admin-modal__body textarea, .admin-modal__body select, .admin-modal__body button');
+
+          if (firstControl) {
+            firstControl.focus();
+          }
+        }, 0);
+      }
+
+      function closeModal(modal) {
+        if (typeof modal.close === 'function' && modal.open) {
+          modal.close();
+        } else {
+          modal.removeAttribute('open');
+          restoreModalFocus(modal);
+        }
+      }
+
+      function restoreModalFocus(modal) {
+        var trigger = modal.__adminModalTrigger;
+
+        if (trigger && typeof trigger.focus === 'function') {
+          trigger.focus();
+        }
+      }
+
+      document.querySelectorAll('.admin-modal').forEach(function (modal) {
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) {
+            closeModal(modal);
+          }
+        });
+
+        modal.addEventListener('close', function () {
+          restoreModalFocus(modal);
+        });
+      });
+
+      document.addEventListener('click', function (event) {
+        var opener = event.target.closest('[data-admin-modal-open]');
+        var closer = event.target.closest('[data-admin-modal-close]');
+
+        if (opener) {
+          var modal = document.getElementById(opener.getAttribute('data-admin-modal-open'));
+
+          if (modal) {
+            fillModal(modal, opener);
+            openModal(modal, opener);
+          }
+        }
+
+        if (closer) {
+          var activeModal = closer.closest('.admin-modal');
+
+          if (activeModal) {
+            closeModal(activeModal);
+          }
+        }
+      });
+    })();
+  </script>
+  <th:block layout:fragment="page-scripts" />
+</body>
+</html>

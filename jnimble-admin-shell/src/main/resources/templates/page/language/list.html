@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.languages.title}">Language Management</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="#{admin.languages.title}">Language Management</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow">Languages</p>
+          <h2 th:text="#{admin.languages.heading}">Framework Languages</h2>
+          <p class="admin-muted" th:text="#{admin.languages.description}">Enabled languages appear in every selector.</p>
+        </div>
+        <button class="admin-button" type="button" th:if="${canManageLanguages}"
+                data-admin-modal-open="language-create-modal" th:text="#{admin.languages.create}">Add Language</button>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${successMessage}" th:text="${successMessage}">Saved.</div>
+      <div class="admin-notice admin-notice--error" th:if="${errorMessage}" th:text="${errorMessage}">Failed.</div>
+
+      <section class="admin-panel">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th th:text="#{admin.languages.code}">Code</th>
+              <th>Locale</th>
+              <th th:text="#{admin.languages.name}">Name</th>
+              <th th:text="#{admin.languages.status}">Status</th>
+              <th th:text="#{admin.languages.sortOrder}">Sort</th>
+              <th th:text="#{admin.languages.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="language : ${languages}">
+              <td class="admin-code" th:text="${language.code()}">zh_CN</td>
+              <td class="admin-code" th:text="${language.localeTag()}">zh-CN</td>
+              <td>
+                <strong th:text="${language.nativeName()}">简体中文</strong>
+                <div class="admin-muted" th:text="${language.name()}">Chinese</div>
+              </td>
+              <td>
+                <span class="admin-status" th:if="${language.enabled()}" th:text="#{admin.languages.enabled}">Enabled</span>
+                <span class="admin-badge" th:unless="${language.enabled()}" th:text="#{admin.languages.disabled}">Disabled</span>
+                <span class="admin-badge" th:if="${language.defaultLanguage()}" th:text="#{admin.languages.default}">Default</span>
+              </td>
+              <td th:text="${language.sortOrder()}">10</td>
+              <td>
+                <div class="admin-actions" th:if="${canManageLanguages}">
+                  <button class="admin-button--quiet" type="button"
+                          data-admin-modal-open="language-edit-modal"
+                          th:attr="data-admin-modal-action=@{/admin/languages/{code}(code=${language.code()})},
+                                   data-admin-modal-code=${language.code()},
+                                   data-admin-modal-locale-tag=${language.localeTag()},
+                                   data-admin-modal-name=${language.name()},
+                                   data-admin-modal-native-name=${language.nativeName()},
+                                   data-admin-modal-sort-order=${language.sortOrder()}"
+                          th:text="#{admin.languages.edit}">Edit</button>
+                  <form method="post" th:action="@{/admin/languages/{code}/enabled(code=${language.code()})}">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="enabled" th:value="${!language.enabled()}">
+                    <button class="admin-button--quiet" type="submit"
+                            th:disabled="${language.defaultLanguage()}"
+                            th:text="${language.enabled() ? #messages.msg('admin.languages.disable') : #messages.msg('admin.languages.enable')}">Toggle</button>
+                  </form>
+                  <form method="post" th:if="${language.enabled() and !language.defaultLanguage()}"
+                        th:action="@{/admin/languages/{code}/default(code=${language.code()})}">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="admin-button--quiet" type="submit" th:text="#{admin.languages.setDefault}">Set Default</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <dialog class="admin-modal" id="language-create-modal" th:if="${canManageLanguages}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div><h2 th:text="#{admin.languages.create}">Add Language</h2><p th:text="#{admin.languages.createHint}">Use a stable code and valid IETF locale tag.</p></div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close th:attr="aria-label=#{admin.common.close}"><span aria-hidden="true"></span></button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form admin-form--stacked" method="post" th:action="@{/admin/languages}">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <label><span th:text="#{admin.languages.code}">Code</span><input name="code" placeholder="fr_FR" required></label>
+              <label><span>Locale</span><input name="localeTag" placeholder="fr-FR" required></label>
+              <label><span th:text="#{admin.languages.name}">Name</span><input name="name" placeholder="French" required></label>
+              <label><span th:text="#{admin.languages.nativeName}">Native name</span><input name="nativeName" placeholder="Français" required></label>
+              <label><span th:text="#{admin.languages.sortOrder}">Sort</span><input name="sortOrder" type="number" value="100" required></label>
+              <label class="admin-checkbox-field"><input name="enabled" type="checkbox" value="true" checked><span th:text="#{admin.languages.enabled}">Enabled</span></label>
+              <label class="admin-checkbox-field"><input name="defaultLanguage" type="checkbox" value="true"><span th:text="#{admin.languages.default}">Default</span></label>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close th:text="#{admin.common.cancel}">Cancel</button>
+                <button class="admin-button" type="submit" th:text="#{admin.common.save}">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="admin-modal" id="language-edit-modal" th:if="${canManageLanguages}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div><h2 th:text="#{admin.languages.edit}">Edit Language</h2><p><span th:text="#{admin.languages.code}">Code</span>: <span class="admin-code" data-admin-modal-text="code">-</span></p></div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close th:attr="aria-label=#{admin.common.close}"><span aria-hidden="true"></span></button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form admin-form--stacked" method="post" data-admin-modal-action>
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <label><span>Locale</span><input name="localeTag" required data-admin-modal-value="locale-tag"></label>
+              <label><span th:text="#{admin.languages.name}">Name</span><input name="name" required data-admin-modal-value="name"></label>
+              <label><span th:text="#{admin.languages.nativeName}">Native name</span><input name="nativeName" required data-admin-modal-value="native-name"></label>
+              <label><span th:text="#{admin.languages.sortOrder}">Sort</span><input name="sortOrder" type="number" required data-admin-modal-value="sort-order"></label>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close th:text="#{admin.common.cancel}">Cancel</button>
+                <button class="admin-button" type="submit" th:text="#{admin.common.save}">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </section>
+  </main>
+</body>
+</html>

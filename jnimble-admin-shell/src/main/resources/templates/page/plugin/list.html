@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="zh-CN"
+      th:lang="${#locale.language}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.plugin.list.title}">插件管理</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="#{admin.plugin.list.title}">插件管理</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow" th:text="#{admin.plugin.list.eyebrow}">扩展能力</p>
+          <h2 th:text="#{admin.plugin.list.heading}">插件</h2>
+          <p class="admin-muted" th:text="#{admin.plugin.list.description}">直接进入插件配置，或管理插件启停状态。</p>
+        </div>
+        <div class="admin-actions" th:if="${@controllerAuthorization.hasPermission('system.plugins.manage')}">
+          <button class="admin-button" type="button" data-admin-modal-open="plugin-upload-modal"
+                  th:text="#{admin.plugin.action.upload}">上传插件 Jar</button>
+        </div>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${message}" th:text="${message}">插件已安装。</div>
+      <div class="admin-notice admin-notice--error" th:if="${error}" th:text="${error}">失败原因。</div>
+
+      <section class="admin-panel">
+        <div class="admin-table-wrap">
+          <table class="admin-table admin-plugin-table">
+            <thead>
+            <tr>
+              <th th:text="#{admin.plugin.column.plugin}">插件</th>
+              <th th:text="#{admin.plugin.column.status}">状态</th>
+              <th th:text="#{admin.plugin.column.version}">版本</th>
+              <th th:text="#{admin.plugin.column.license}">授权状态</th>
+              <th th:text="#{admin.plugin.column.configuration}">参数配置</th>
+              <th th:text="#{admin.plugin.column.actions}">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(plugins)}">
+              <td colspan="6" class="admin-muted" th:text="#{admin.plugin.list.empty}">当前没有已登记的插件。</td>
+            </tr>
+            <tr th:each="plugin : ${plugins}">
+              <td>
+                <a class="admin-link"
+                   th:href="@{/admin/plugins/{pluginId}(pluginId=${plugin.pluginId()})}"
+                   th:text="${pluginMessages.name(plugin.descriptor())}">插件名称</a>
+                <div class="admin-muted" th:text="${pluginMessages.description(plugin.descriptor())}">插件描述</div>
+                <div class="admin-muted admin-code" th:text="${plugin.pluginId()}">plugin.id</div>
+              </td>
+              <td th:attr="data-label=#{admin.plugin.column.status}">
+                <span class="admin-status" th:text="${pluginMessages.status(plugin.status())}">已安装</span>
+              </td>
+              <td th:attr="data-label=#{admin.plugin.column.version}"
+                  th:text="${plugin.descriptor().version()}">0.0.0</td>
+              <td th:attr="data-label=#{admin.plugin.column.license}"
+                  th:with="licenseView=${pluginLicenseViews.get(plugin.pluginId())}">
+                <div class="admin-license-status">
+                  <span class="admin-status"
+                        th:attr="data-plugin-license-status=${plugin.pluginId()}"
+                        th:classappend="${licenseView.status().name() == 'INVALID' or licenseView.status().name() == 'EXPIRED' or licenseView.status().name() == 'TIME_ROLLBACK' or licenseView.status().name() == 'TAMPERED'} ? ' admin-status--danger' : (${licenseView.status().name() == 'MISSING' or licenseView.status().name() == 'EXPIRING'} ? ' admin-status--warning' : '')"
+                        th:text="${pluginMessages.licenseStatus(licenseView.status())}">免授权</span>
+                  <button class="admin-link-button"
+                          type="button"
+                          th:if="${licenseView.required() and @controllerAuthorization.hasPermission('system.plugins.manage')}"
+                          data-admin-modal-open="plugin-license-modal"
+                          th:attr="data-admin-modal-action=@{/admin/plugin-licenses/{pluginId}/activate-result(pluginId=${plugin.pluginId()})},
+                                   data-admin-modal-revalidate-action=@{/admin/plugin-licenses/{pluginId}/revalidate-result(pluginId=${plugin.pluginId()})},
+                                   data-admin-modal-plugin-id=${plugin.pluginId()},
+                                   data-admin-modal-plugin-name=${pluginMessages.name(plugin.descriptor())},
+                                   data-admin-modal-machine-code=${licenseView.machineCode()},
+                                   data-admin-modal-license-status=${pluginMessages.licenseStatus(licenseView.status())},
+                                   data-admin-modal-expires-at=${licenseView.expiresAt() == null ? '-' : #temporals.format(licenseView.expiresAt(), 'yyyy-MM-dd HH:mm:ss')},
+                                   data-admin-modal-issuer-url=${licenseView.issuerUrl()}"
+                          th:text="#{admin.plugin.license.manage}">授权管理</button>
+                </div>
+              </td>
+              <td th:attr="data-label=#{admin.plugin.column.configuration}"
+                  th:with="configuration=${plugin.descriptor().configuration()}">
+                <a class="admin-button"
+                   th:if="${configuration != null and configuration.fields() != null and !configuration.fields().isEmpty()}"
+                   th:href="@{/admin/plugin-configurations/{pluginId}(pluginId=${plugin.pluginId()})}"
+                   th:text="#{admin.plugin.action.configureParameters}">配置参数</a>
+                <span class="admin-muted"
+                      th:if="${configuration == null or configuration.fields() == null or configuration.fields().isEmpty()}"
+                      th:text="#{admin.plugin.config.none}">无可配置参数</span>
+              </td>
+              <td th:attr="data-label=#{admin.plugin.column.actions}">
+                <div class="admin-actions">
+                  <a class="admin-button admin-button--secondary"
+                     th:href="@{/admin/plugins/{pluginId}(pluginId=${plugin.pluginId()})}"
+                     th:text="#{admin.plugin.action.details}">详情</a>
+                  <th:block th:if="${@controllerAuthorization.hasPermission('system.plugins.manage')}">
+                    <form method="post"
+                          th:if="${plugin.status().name() == 'UNINSTALLED'}"
+                          th:action="@{/admin/plugins/{pluginId}/install(pluginId=${plugin.pluginId()})}">
+                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                      <button class="admin-button" type="submit" th:text="#{admin.plugin.action.install}">安装</button>
+                    </form>
+                    <form method="post"
+                          th:if="${plugin.status().name() == 'INSTALLED' or plugin.status().name() == 'DISABLED' or plugin.status().name() == 'FAILED' or plugin.status().name() == 'MIGRATION_FAILED'}"
+                          th:action="@{/admin/plugins/{pluginId}/enable(pluginId=${plugin.pluginId()})}">
+                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                      <button class="admin-button" type="submit" th:text="#{admin.plugin.action.enable}">启用</button>
+                    </form>
+                    <form method="post"
+                          th:if="${plugin.status().name() == 'ENABLED'}"
+                          th:action="@{/admin/plugins/{pluginId}/disable(pluginId=${plugin.pluginId()})}">
+                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                      <button class="admin-button admin-button--secondary" type="submit"
+                              th:text="#{admin.plugin.action.disable}">停用</button>
+                    </form>
+                  </th:block>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <dialog class="admin-modal" id="plugin-upload-modal"
+              th:if="${@controllerAuthorization.hasPermission('system.plugins.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2 th:text="#{admin.plugin.upload.title}">上传插件 Jar</h2>
+              <p th:text="#{admin.plugin.upload.description}">选择插件 Jar 包，校验通过后将自动安装到插件目录。</p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close
+                    th:attr="aria-label=#{admin.plugin.upload.cancel}">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form" method="post" enctype="multipart/form-data"
+                  th:action="@{/admin/plugins/upload}" data-plugin-upload-form>
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <label class="admin-plugin-upload" data-plugin-upload-dropzone>
+                <input type="file" name="jar" accept=".jar,application/java-archive,application/x-java-archive"
+                       required data-plugin-upload-input>
+                <span class="admin-plugin-upload__badge" aria-hidden="true">JAR</span>
+                <strong th:text="#{admin.plugin.upload.choose}">点击选择，或将 Jar 文件拖到此处</strong>
+                <span th:text="#{admin.plugin.upload.hint}">仅支持 .jar 插件包，文件大小不超过 5 MB</span>
+              </label>
+              <div class="admin-plugin-upload__file" data-plugin-upload-file hidden>
+                <span class="admin-plugin-upload__file-icon" aria-hidden="true">JAR</span>
+                <span class="admin-plugin-upload__file-meta">
+                  <strong data-plugin-upload-filename>plugin.jar</strong>
+                  <small data-plugin-upload-filesize>0 KB</small>
+                </span>
+              </div>
+              <p class="admin-plugin-upload__error" data-plugin-upload-error hidden></p>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close
+                        th:text="#{admin.plugin.upload.cancel}">取消</button>
+                <button class="admin-button" type="submit" disabled data-plugin-upload-submit
+                        th:attr="data-uploading-text=#{admin.plugin.upload.uploading}"
+                        th:text="#{admin.plugin.upload.submit}">上传并安装</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="admin-modal" id="plugin-license-modal"
+              th:if="${@controllerAuthorization.hasPermission('system.plugins.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2 th:text="#{admin.plugin.license.title}">插件授权</h2>
+              <p data-admin-modal-text="plugin-name">插件名称</p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close
+                    th:attr="aria-label=#{admin.plugin.license.close}">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form" method="post" data-admin-modal-action data-license-form>
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="admin-notice" data-license-result role="status" aria-live="polite" hidden></div>
+              <div class="admin-license-summary">
+                <div>
+                  <span th:text="#{admin.plugin.license.currentStatus}">当前状态</span>
+                  <strong data-admin-modal-text="license-status">未授权</strong>
+                </div>
+                <div>
+                  <span th:text="#{admin.plugin.license.expiresAt}">到期时间</span>
+                  <strong data-admin-modal-text="expires-at">-</strong>
+                </div>
+              </div>
+              <label>
+                <span th:text="#{admin.plugin.license.machineCode}">机器码</span>
+                <div class="admin-license-copy-row">
+                  <input class="admin-code" type="text" readonly data-admin-modal-value="machine-code">
+                  <button class="admin-button admin-button--secondary" type="button" data-license-copy
+                          th:text="#{admin.plugin.license.copyMachineCode}">复制</button>
+                </div>
+              </label>
+              <a class="admin-link" target="_blank" rel="noopener noreferrer"
+                 data-admin-modal-href="issuer-url"
+                 th:text="#{admin.plugin.license.purchase}">前往生成授权码</a>
+              <label>
+                <span th:text="#{admin.plugin.license.key}">授权码</span>
+                <textarea class="admin-code" name="token" rows="6" required
+                          th:placeholder="#{admin.plugin.license.keyPlaceholder}"></textarea>
+              </label>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="submit"
+                        formnovalidate data-admin-modal-formaction="revalidate-action" data-license-submit
+                        th:text="#{admin.plugin.license.revalidate}">重新检测</button>
+                <button class="admin-button" type="submit" data-license-submit
+                        th:text="#{admin.plugin.license.activate}">验证并激活</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </section>
+  </main>
+
+  <script layout:fragment="page-scripts" th:inline="javascript">
+    (function () {
+      var form = document.querySelector('[data-plugin-upload-form]');
+      if (!form) return;
+
+      var input = form.querySelector('[data-plugin-upload-input]');
+      var dropzone = form.querySelector('[data-plugin-upload-dropzone]');
+      var filePanel = form.querySelector('[data-plugin-upload-file]');
+      var fileName = form.querySelector('[data-plugin-upload-filename]');
+      var fileSize = form.querySelector('[data-plugin-upload-filesize]');
+      var error = form.querySelector('[data-plugin-upload-error]');
+      var submit = form.querySelector('[data-plugin-upload-submit]');
+      var invalidTypeMessage = /*[[#{admin.plugin.upload.invalidType}]]*/ '只能上传 .jar 插件包';
+      var tooLargeMessage = /*[[#{admin.plugin.upload.tooLarge}]]*/ '文件大小不能超过 5 MB';
+      var requiredMessage = /*[[#{admin.plugin.upload.required}]]*/ '请先选择插件 Jar';
+      var maxFileSize = 5 * 1024 * 1024;
+
+      function showError(message) {
+        error.textContent = message;
+        error.hidden = !message;
+      }
+
+      function validate(file) {
+        if (!file) return requiredMessage;
+        if (!file.name || !file.name.toLowerCase().endsWith('.jar')) return invalidTypeMessage;
+        if (file.size > maxFileSize) return tooLargeMessage;
+        return '';
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      function renderSelection() {
+        var file = input.files && input.files[0];
+        var validationMessage = file ? validate(file) : '';
+        filePanel.hidden = !file;
+        submit.disabled = !file || Boolean(validationMessage);
+        showError(validationMessage);
+        if (!file) return;
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+      }
+
+      input.addEventListener('change', renderSelection);
+
+      ['dragenter', 'dragover'].forEach(function (eventName) {
+        dropzone.addEventListener(eventName, function (event) {
+          event.preventDefault();
+          dropzone.classList.add('admin-plugin-upload--dragging');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(function (eventName) {
+        dropzone.addEventListener(eventName, function (event) {
+          event.preventDefault();
+          dropzone.classList.remove('admin-plugin-upload--dragging');
+        });
+      });
+
+      dropzone.addEventListener('drop', function (event) {
+        var files = event.dataTransfer && event.dataTransfer.files;
+        if (!files || !files.length) return;
+        try {
+          var transfer = new DataTransfer();
+          transfer.items.add(files[0]);
+          input.files = transfer.files;
+        } catch (ignored) {
+          input.files = files;
+        }
+        renderSelection();
+      });
+
+      form.addEventListener('submit', function (event) {
+        var file = input.files && input.files[0];
+        var validationMessage = validate(file);
+        if (validationMessage) {
+          event.preventDefault();
+          showError(validationMessage);
+          return;
+        }
+        submit.disabled = true;
+        submit.textContent = submit.getAttribute('data-uploading-text');
+      });
+    })();
+
+    (function () {
+      var modal = document.getElementById('plugin-license-modal');
+      var form = modal && modal.querySelector('[data-license-form]');
+      if (!form) return;
+
+      var resultBox = form.querySelector('[data-license-result]');
+      var statusText = form.querySelector('[data-admin-modal-text="license-status"]');
+      var expiresAtText = form.querySelector('[data-admin-modal-text="expires-at"]');
+      var submitButtons = form.querySelectorAll('[data-license-submit]');
+      var requestFailedMessage = /*[[#{admin.plugin.license.requestFailed}]]*/ '请求失败，请稍后重试';
+
+      modal.addEventListener('close', function () {
+        resultBox.hidden = true;
+        resultBox.textContent = '';
+        resultBox.classList.remove('admin-notice--success', 'admin-notice--error');
+      });
+
+      function showResult(success, message) {
+        resultBox.textContent = message || requestFailedMessage;
+        resultBox.hidden = false;
+        resultBox.classList.toggle('admin-notice--success', success);
+        resultBox.classList.toggle('admin-notice--error', !success);
+      }
+
+      function setSubmitting(submitting) {
+        submitButtons.forEach(function (button) {
+          button.disabled = submitting;
+        });
+      }
+
+      function statusClass(status) {
+        if (['INVALID', 'EXPIRED', 'TIME_ROLLBACK', 'TAMPERED', 'MACHINE_CODE_MISMATCH', 'PLUGIN_MISMATCH'].indexOf(status) !== -1) {
+          return 'danger';
+        }
+        if (['MISSING', 'UNVERIFIED', 'EXPIRING'].indexOf(status) !== -1) {
+          return 'warning';
+        }
+        return '';
+      }
+
+      function updateStatusElement(element, status, label) {
+        if (!element) return;
+        element.textContent = label;
+        element.classList.remove('admin-status--danger', 'admin-status--warning');
+        var style = statusClass(status);
+        if (style) element.classList.add('admin-status--' + style);
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var submitter = event.submitter;
+        var action = submitter && submitter.getAttribute('formaction') || form.getAttribute('action');
+        var data = new FormData(form);
+        if (submitter && submitter.hasAttribute('formnovalidate')) {
+          data.delete('token');
+        }
+        resultBox.hidden = true;
+        setSubmitting(true);
+
+        fetch(action, {
+          method: 'POST',
+          body: data,
+          headers: {'Accept': 'application/json'},
+          credentials: 'same-origin'
+        }).then(function (response) {
+          return response.json().then(function (payload) {
+            return {ok: response.ok, payload: payload};
+          });
+        }).then(function (result) {
+          var payload = result.payload || {};
+          var success = result.ok && payload.success;
+          showResult(success, payload.message);
+          if (!payload.status) return;
+
+          statusText.textContent = payload.statusLabel;
+          expiresAtText.textContent = payload.expiresAt || '-';
+          var trigger = modal.__adminModalTrigger;
+          if (trigger) {
+            trigger.setAttribute('data-admin-modal-license-status', payload.statusLabel);
+            trigger.setAttribute('data-admin-modal-expires-at', payload.expiresAt || '-');
+            var pluginId = trigger.getAttribute('data-admin-modal-plugin-id');
+            updateStatusElement(document.querySelector('[data-plugin-license-status="' + pluginId + '"]'), payload.status, payload.statusLabel);
+          }
+        }).catch(function () {
+          showResult(false, requestFailedMessage);
+        }).finally(function () {
+          setSubmitting(false);
+        });
+      });
+    })();
+
+    document.addEventListener('click', function (event) {
+      var copyButton = event.target.closest('[data-license-copy]');
+      if (!copyButton) return;
+      var field = copyButton.closest('.admin-license-copy-row').querySelector('input');
+      var copiedMessage = /*[[#{admin.plugin.license.copied}]]*/ '机器码已复制';
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(field.value).then(function () {
+          copyButton.textContent = copiedMessage;
+        });
+      } else {
+        field.select();
+        document.execCommand('copy');
+        copyButton.textContent = copiedMessage;
+      }
+    });
+  </script>
+</body>
+</html>

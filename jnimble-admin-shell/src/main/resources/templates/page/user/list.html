@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>用户管理</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title">用户管理</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow">Users</p>
+          <h2>用户列表</h2>
+        </div>
+        <button class="admin-button" type="button"
+                th:if="${userStoreAvailable and @controllerAuthorization.hasPermission('system.users.manage')}"
+                data-admin-modal-open="user-create-modal">创建用户</button>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${message}" th:text="${message}">用户已创建。</div>
+      <div class="admin-notice admin-notice--error" th:if="${error}" th:text="${error}">失败原因。</div>
+
+      <section class="admin-panel" th:if="${!userStoreAvailable}">
+        <div class="admin-panel__header">
+          <h2>账号存储未启用</h2>
+          <p>启用 JDBC 用户模式后，这里会显示系统用户并支持创建、禁用和分配角色。</p>
+        </div>
+      </section>
+
+      <section class="admin-panel" th:if="${userStoreAvailable}">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th>用户名</th>
+              <th>显示名</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(users)}">
+              <td colspan="4" class="admin-muted">暂无用户。</td>
+            </tr>
+            <tr th:each="user : ${users}">
+              <td class="admin-code" th:text="${user.username()}">admin</td>
+              <td th:text="${user.displayName()}">Administrator</td>
+              <td><span class="admin-status" th:text="${user.status()}">ACTIVE</span></td>
+              <td>
+                <div class="admin-actions">
+                  <button class="admin-button--quiet" type="button"
+                          th:if="${@controllerAuthorization.hasPermission('system.users.manage')}"
+                          data-admin-modal-open="user-edit-modal"
+                          th:attr="data-admin-modal-action=@{/admin/users/{username}/profile(username=${user.username()})},
+                                   data-admin-modal-username=${user.username()},
+                                   data-admin-modal-display-name=${user.displayName()},
+                                   data-admin-modal-role-ids=${userRoleIds.get(user.username())}">编辑</button>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <dialog class="admin-modal" id="user-create-modal" th:if="${userStoreAvailable and @controllerAuthorization.hasPermission('system.users.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2>创建用户</h2>
+              <p>填写账号资料并直接分配一个或多个角色。</p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close aria-label="关闭弹窗">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form admin-form--stacked" method="post" th:action="@{/admin/users}">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="admin-form-grid">
+                <label>
+                  <span>用户名</span>
+                  <input name="username" required>
+                </label>
+                <label>
+                  <span>显示名</span>
+                  <input name="displayName">
+                </label>
+                <label>
+                  <span>初始密码</span>
+                  <input name="password" type="password" required>
+                </label>
+                <fieldset class="admin-role-selector">
+                  <legend>角色</legend>
+                  <p class="admin-muted" th:if="${#lists.isEmpty(roles)}">暂无可分配角色，请先到角色权限中创建角色。</p>
+                  <div class="admin-role-options" th:if="${!#lists.isEmpty(roles)}">
+                    <label class="admin-checkbox-field"
+                           th:each="role : ${roles}"
+                           th:classappend="${!role.active()} ? ' admin-checkbox-field--unavailable' : ''">
+                      <input type="checkbox" name="roleIds"
+                             th:value="${role.id()}"
+                             th:disabled="${!role.active()}">
+                      <span>
+                        <strong th:text="${role.name()}">角色名称</strong>
+                        <small class="admin-code" th:text="${role.code()}">ROLE_CODE</small>
+                      </span>
+                    </label>
+                  </div>
+                  <small class="admin-muted" th:if="${!#lists.isEmpty(roles)}">支持多选；未选择时用户不会获得后台权限。</small>
+                </fieldset>
+              </div>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close>取消</button>
+                <button class="admin-button" type="submit">创建用户</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog class="admin-modal" id="user-edit-modal" th:if="${userStoreAvailable and @controllerAuthorization.hasPermission('system.users.manage')}">
+        <div class="admin-modal__panel">
+          <div class="admin-modal__header">
+            <div>
+              <h2>修改用户资料</h2>
+              <p>
+                用户名：
+                <span class="admin-code" data-admin-modal-text="username">-</span>
+              </p>
+            </div>
+            <button class="admin-modal__close" type="button" data-admin-modal-close aria-label="关闭弹窗">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="admin-modal__body">
+            <form class="admin-form admin-form--stacked" method="post" data-admin-modal-action>
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="admin-form">
+                <label>
+                  <span>账号</span>
+                  <input name="newUsername" required data-admin-modal-value="username">
+                </label>
+                <label>
+                  <span>显示名</span>
+                  <input name="displayName" required data-admin-modal-value="display-name">
+                </label>
+                <label>
+                  <span>密码</span>
+                  <input name="password" type="password" placeholder="不填写则不修改" autocomplete="new-password">
+                </label>
+                <fieldset class="admin-role-selector">
+                  <legend>角色</legend>
+                  <p class="admin-muted" th:if="${#lists.isEmpty(roles)}">暂无可分配角色，请先到角色权限中创建角色。</p>
+                  <div class="admin-role-options" th:if="${!#lists.isEmpty(roles)}">
+                    <label class="admin-checkbox-field"
+                           th:each="role : ${roles}"
+                           th:classappend="${!role.active()} ? ' admin-checkbox-field--unavailable' : ''">
+                      <input type="checkbox" name="roleIds"
+                             data-admin-modal-checked="role-ids"
+                             th:value="${role.id()}"
+                             th:disabled="${!role.active()}">
+                      <span>
+                        <strong th:text="${role.name()}">角色名称</strong>
+                        <small class="admin-code" th:text="${role.code()}">ROLE_CODE</small>
+                      </span>
+                    </label>
+                  </div>
+                  <small class="admin-muted" th:if="${!#lists.isEmpty(roles)}">支持多选；取消勾选会移除对应角色。</small>
+                </fieldset>
+              </div>
+              <div class="admin-form-actions">
+                <button class="admin-button admin-button--secondary" type="button" data-admin-modal-close>取消</button>
+                <button class="admin-button" type="submit">保存修改</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </section>
+  </main>
+</body>
+</html>

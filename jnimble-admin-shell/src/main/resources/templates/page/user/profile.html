@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.profile.title}">My Account</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="#{admin.profile.title}">My Account</h1>
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div><p class="admin-shell__eyebrow">Account</p><h2 th:text="#{admin.profile.heading}">Profile and Security</h2></div>
+      </div>
+      <div class="admin-notice admin-notice--success" th:if="${successMessage}" th:text="${successMessage}">Saved.</div>
+      <div class="admin-notice admin-notice--error" th:if="${errorMessage}" th:text="${errorMessage}">Failed.</div>
+
+      <div class="admin-panel-grid">
+        <section class="admin-panel" id="profile">
+          <div class="admin-panel__header"><h2 th:text="#{admin.profile.information}">Profile</h2><p th:text="#{admin.profile.informationHint}">Update the name shown in the admin console.</p></div>
+          <form class="admin-form" method="post" th:action="@{/admin/profile}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label><span th:text="#{admin.profile.username}">Account</span><input th:value="${profileUser.username()}" disabled></label>
+            <label><span th:text="#{admin.profile.displayName}">Name</span><input name="displayName" th:value="${profileUser.displayName()}" required></label>
+            <div class="admin-form-actions"><button class="admin-button" type="submit" th:text="#{admin.common.save}">Save</button></div>
+          </form>
+        </section>
+
+        <section class="admin-panel" id="password">
+          <div class="admin-panel__header"><h2 th:text="#{admin.profile.changePassword}">Change Password</h2><p th:text="#{admin.profile.passwordHint}">Verify the current password before setting a new one.</p></div>
+          <form class="admin-form" method="post" th:action="@{/admin/profile/password}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label><span th:text="#{admin.profile.currentPassword}">Current Password</span><input name="currentPassword" type="password" autocomplete="current-password" required></label>
+            <label><span th:text="#{admin.profile.newPassword}">New Password</span><input name="newPassword" type="password" minlength="6" autocomplete="new-password" required></label>
+            <label><span th:text="#{admin.profile.confirmPassword}">Confirm Password</span><input name="confirmPassword" type="password" minlength="6" autocomplete="new-password" required></label>
+            <div class="admin-form-actions"><button class="admin-button" type="submit" th:text="#{admin.profile.changePassword}">Change Password</button></div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

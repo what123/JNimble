@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN" th:lang="${#locale.toLanguageTag()}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.login.title(${site?.nameOrFallback()})}">登录 - JNimble Admin</title>
+  <link rel="stylesheet" th:href="@{/assets/system/css/admin-shell.css}">
+</head>
+<body class="admin-auth">
+  <div class="admin-auth__language">
+    <th:block th:replace="~{fragment/language-switcher :: switcher}" />
+  </div>
+  <main class="admin-auth__panel" aria-labelledby="login-title">
+    <div class="admin-auth__brand">
+      <th:block th:if="${site != null and site.hasLogo()}">
+        <img class="admin-shell__brand-logo" th:src="${site.logoUrl()}" th:alt="${site.nameOrFallback()}" aria-hidden="true">
+      </th:block>
+      <span class="admin-shell__brand-mark" aria-hidden="true" th:unless="${site != null and site.hasLogo()}">J</span>
+      <div>
+        <strong th:text="${site?.nameOrFallback()}">JNimble</strong>
+        <small th:text="${site?.subtitleOrFallback()}">Operations Console</small>
+      </div>
+    </div>
+
+    <header class="admin-auth__header">
+      <p class="admin-shell__eyebrow" th:text="#{admin.login.eyebrow}">Secure access</p>
+      <h1 id="login-title" th:text="#{admin.login.heading(${site?.nameOrFallback()})}">登录 JNimble Admin</h1>
+    </header>
+
+    <form class="admin-auth__form" th:action="@{/login}" method="post">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <label>
+        <span th:text="#{admin.login.username}">用户名</span>
+        <input type="text" name="username" autocomplete="username" required>
+      </label>
+      <label>
+        <span th:text="#{admin.login.password}">密码</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit" th:text="#{admin.login.submit}">登录</button>
+    </form>
+  </main>
+</body>
+</html>

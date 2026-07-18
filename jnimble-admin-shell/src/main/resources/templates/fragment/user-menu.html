@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <details class="admin-user-menu" th:fragment="menu" th:if="${currentUser != null}">
+    <summary class="admin-user-menu__summary">
+      <span class="admin-user-menu__avatar" th:text="${#strings.substring(currentUser.displayName(), 0, 1)}">A</span>
+      <span class="admin-user-menu__identity">
+        <strong th:text="${currentUser.displayName()}">Administrator</strong>
+        <small th:text="${currentUser.username()}">admin</small>
+      </span>
+      <span class="admin-user-menu__chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="admin-user-menu__dropdown">
+      <div class="admin-user-menu__account">
+        <strong th:text="${currentUser.displayName()}">Administrator</strong>
+        <span><span th:text="#{admin.userMenu.account}">Account</span>: <span class="admin-code" th:text="${currentUser.username()}">admin</span></span>
+      </div>
+      <a th:href="@{/admin/profile#profile}" th:text="#{admin.userMenu.profile}">Profile</a>
+      <a th:href="@{/admin/profile#password}" th:text="#{admin.userMenu.password}">Change Password</a>
+      <form method="post" th:action="@{/logout}">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit" th:text="#{admin.layout.logout}">Sign out</button>
+      </form>
+    </div>
+  </details>
+</body>
+</html>

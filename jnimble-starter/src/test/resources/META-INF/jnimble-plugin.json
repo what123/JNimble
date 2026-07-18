@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "id": "test-plugin",
+  "name": "Test Plugin",
+  "description": "Test plugin used by starter unit tests",
+  "version": "1.0.0",
+  "platformVersion": "0.1.x",
+  "author": "JNimble Team",
+  "bootClass": "com.jnimble.starter.TestPluginBoot"
+}
