@@ -6,6 +6,12 @@
 
 [English](README.md) | 中文
 
+> **授权提示**：JNimble 采用 **双重授权模式**。
+> - **开源版（Apache 2.0）**：允许商用、二开、分发，但**必须保留管理后台和登录页底部的版权信息**（`© 2026 JNimble. All rights reserved.`）。
+> - **商业授权**：如需去除版权信息或将 JNimble 用于不显示版权的场景，请联系 `178277164@qq.com` 购买商业授权。
+>
+> 完整授权条款见 [NOTICE](NOTICE) 与 [LICENSE](LICENSE)。
+
 JNimble 是一个**插件化**的 Java 后台管理框架，基于 Spring Boot 3、Java 21、MyBatis-Plus 和 Thymeleaf 构建。所有业务能力都以插件形式存在 —— 安装即用、卸载即走，让你通过**搭积木式**地组合插件来构建垂直后台产品，而无需重新造平台轮子。
 
 ## 为什么选 JNimble
@@ -52,6 +58,24 @@ mvn -pl jnimble-starter spring-boot:run
 ```
 
 打开 `http://localhost:8080/admin`，使用 `admin` / 你设置的密码登录。
+
+### 数据库迁移（Flyway 自动建表/升级）
+
+JNimble 使用 [Flyway](https://flywaydb.org/) 管理数据库版本，**应用启动时会自动执行迁移脚本**，无需手动建表。
+
+- **框架迁移**：位于 `jnimble-starter/src/main/resources/db/migration/system/`，文件名约定 `V{版本号}__{描述}.sql`，所有 `jnimble_*` 系统表（用户、角色、权限、审计、插件状态、系统设置等）都由这些脚本创建和维护。
+- **插件迁移**：每个插件拥有独立的迁移目录和历史表（详见 [插件机制 → 数据库迁移](#数据库迁移)），互不影响。
+- **历史表**：框架使用 `flyway_schema_history` 记录已执行迁移；插件使用 `flyway_schema_history_{pluginId}`。
+- **升级机制**：增加新表或字段时，**只需新增一个版本号更高的 `V*.sql` 脚本**，下次启动 Flyway 会自动识别并执行。**严禁**直接修改已发布的迁移脚本或手动改库结构 —— 已应用的脚本一旦变更，Flyway 校验会失败导致启动报错。
+- **基线策略**：`application.yml` 中 `spring.flyway.baseline-on-migrate=true`，对已有库的首次迁移会自动建立基线，不会清空数据。
+
+如需查看迁移状态：
+
+```bash
+mysql -u<user> -p<pwd> jnimble -e "SELECT installed_rank, version, description, success, installed_on FROM flyway_schema_history ORDER BY installed_rank;"
+```
+
+如启动时 Flyway 校验失败（例如历史中存在已删除的迁移），可对历史表执行 `flyway repair` 或清理对应记录后重启。
 
 ## 插件机制
 

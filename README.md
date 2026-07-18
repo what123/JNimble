@@ -6,6 +6,12 @@
 
 English | [中文](README_CN.md)
 
+> **Licensing**: JNimble is distributed under a **dual-license model**.
+> - **Open Source (Apache 2.0)**: You may use, modify, and distribute JNimble commercially, **provided that the copyright footer in the admin UI and login page is retained** (`© 2026 JNimble. All rights reserved.`).
+> - **Commercial License**: To remove or alter the copyright footer, contact `178277164@qq.com` to purchase a commercial license.
+>
+> See [NOTICE](NOTICE) and [LICENSE](LICENSE) for full terms.
+
 JNimble is a **plugin-driven** Java admin framework built on Spring Boot 3, Java 21, MyBatis-Plus, and Thymeleaf. Every business capability ships as a plugin — install to use, uninstall to remove — so you build vertical admin products by **composing plugins like building blocks** instead of reinventing the platform.
 
 ## Why JNimble
@@ -52,6 +58,24 @@ mvn -pl jnimble-starter spring-boot:run
 ```
 
 Open `http://localhost:8080/admin` and sign in with `admin` / the password you set above.
+
+### Database migrations (Flyway auto-schema)
+
+JNimble manages schema versions with [Flyway](https://flywaydb.org/). **Migrations run automatically on application startup** — no manual table creation is required.
+
+- **Framework migrations**: Located in `jnimble-starter/src/main/resources/db/migration/system/`. Filenames follow `V{version}__{description}.sql`. All `jnimble_*` system tables (users, roles, permissions, audit log, plugin state, system settings, etc.) are created and maintained by these scripts.
+- **Plugin migrations**: Each plugin owns its own migration directory and history table (see [Plugin Architecture → Database migrations](#database-migrations)). They do not interfere with each other.
+- **History table**: The framework uses `flyway_schema_history`; plugins use `flyway_schema_history_{pluginId}`.
+- **Upgrade mechanism**: To add a new table or column, **add a new `V*.sql` script with a higher version number** — Flyway picks it up on next startup. **Never** edit an already-applied migration script or modify the database manually; doing so fails Flyway's checksum validation and breaks startup.
+- **Baseline strategy**: `spring.flyway.baseline-on-migrate=true` in `application.yml` — Flyway baselines an existing database on first run without wiping data.
+
+To inspect migration status:
+
+```bash
+mysql -u<user> -p<pwd> jnimble -e "SELECT installed_rank, version, description, success, installed_on FROM flyway_schema_history ORDER BY installed_rank;"
+```
+
+If Flyway validation fails at startup (e.g. history contains a removed migration), run `flyway repair` or clean the corresponding rows in `flyway_schema_history` before restarting.
 
 ## Plugin Architecture
 
