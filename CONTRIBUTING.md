@@ -10,7 +10,7 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We ex
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Gitee Issues](https://gitee.com/what520/jnimble/issues).
+1. Check if the bug has already been reported in [GitHub Issues](https://github.com/what123/JNimble/issues).
 2. If not, create a new issue with:
    - A clear, descriptive title
    - Steps to reproduce the problem
