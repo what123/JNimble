@@ -88,6 +88,7 @@
           </div>
         </div>
         <div class="admin-shell__topbar-actions">
+          <a class="admin-shell__license-link" th:href="'mailto:178277164@qq.com?subject=' + #{admin.license.contact.subject}" th:text="#{admin.license.contact}">Commercial license</a>
           <jn:hook name="admin.layout.topbar" />
           <th:block th:replace="~{fragment/language-switcher :: switcher}" />
           <th:block th:replace="~{fragment/user-menu :: menu}" />
