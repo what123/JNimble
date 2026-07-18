@@ -64,6 +64,10 @@
            th:classappend="${activeNav == 'system-settings'} ? ' admin-shell__nav-item--active' : ''"
            th:if="${@controllerAuthorization.hasPermission('system.settings.view')}"
            th:href="@{/admin/system-settings}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.systemSettings}">系统设置</span></a>
+        <a class="admin-shell__nav-item"
+           th:classappend="${activeNav == 'storage-config'} ? ' admin-shell__nav-item--active' : ''"
+           th:if="${@controllerAuthorization.hasPermission('system.settings.view')}"
+           th:href="@{/admin/storage-config}"><span class="admin-shell__nav-icon" aria-hidden="true"></span><span th:text="#{admin.layout.storageConfig}">存储配置</span></a>
         <jn:hook name="admin.layout.sidebar.sys.end" />
         <jn:hook name="admin.layout.sidebar.end" />
       </nav>

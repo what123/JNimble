@@ -8,7 +8,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -29,17 +28,23 @@ public class LogoStorageService {
             "image/svg+xml", "svg"
     );
 
+    private final StorageConfigService storageConfigService;
     private final Path storageDirectory;
 
     /**
      * Constructs a new logo storage service.
      *
-     * @param storageDirectory the directory path for storing logo files (configurable property)
+     * @param storageConfigService the storage config service for resolving dynamic directories
      */
     public LogoStorageService(
-            @Value("${jnimble.branding.logo-storage-dir:./data/branding}") String storageDirectory
+            StorageConfigService storageConfigService
     ) {
-        this.storageDirectory = Path.of(storageDirectory).toAbsolutePath().normalize();
+        this.storageConfigService = storageConfigService;
+        this.storageDirectory = null;
+    }
+
+    private Path storageDirectory() {
+        return Path.of(storageConfigService.resolveLogoDir()).toAbsolutePath().normalize();
     }
 
     /**
@@ -56,12 +61,12 @@ public class LogoStorageService {
         String fileName = UUID.randomUUID() + "." + EXTENSIONS.get(contentType);
         Path target = resolve(fileName);
         try {
-            Files.createDirectories(storageDirectory);
+            Files.createDirectories(storageDirectory());
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException ex) {
-            throw new IllegalStateException("Logo 保存失败", ex);
+            throw new IllegalStateException("Logo 保存失败（目录: " + storageDirectory() + "）: " + ex.getMessage(), ex);
         }
         return fileName;
     }
@@ -163,8 +168,8 @@ public class LogoStorageService {
         if (fileName == null || !fileName.matches("[0-9a-fA-F-]{36}\\.(jpg|png|gif|webp|svg)")) {
             throw new IllegalArgumentException("Logo 路径无效");
         }
-        Path resolved = storageDirectory.resolve(fileName).normalize();
-        if (!resolved.startsWith(storageDirectory)) {
+        Path resolved = storageDirectory().resolve(fileName).normalize();
+        if (!resolved.startsWith(storageDirectory())) {
             throw new IllegalArgumentException("Logo 路径无效");
         }
         return resolved;

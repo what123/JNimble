@@ -142,7 +142,7 @@ public class SystemSettingController {
                     "success", true,
                     "logoUrl", LOGO_BASE_PATH + fileName
             ));
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", ex.getMessage()

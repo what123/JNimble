@@ -27,6 +27,7 @@
         <module>jnimble-platform</module>
         <module>jnimble-admin-shell</module>
         <module>jnimble-starter</module>
+        <module>jnimble-demo-plugin</module>
     </modules>
 
     <properties>

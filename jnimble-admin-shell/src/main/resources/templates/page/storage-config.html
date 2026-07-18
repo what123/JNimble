@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.storage.title}">存储配置</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="#{admin.storage.title}">存储配置</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow" th:text="#{admin.layout.section.system}">系统管理</p>
+          <h2 th:text="#{admin.storage.heading}">存储目录</h2>
+          <p class="admin-muted" th:text="#{admin.storage.description}">配置插件 JAR 和 Logo 图片的存储目录，修改后对新上传立即生效。</p>
+        </div>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${successMessage}" th:text="${successMessage}">已保存。</div>
+      <div class="admin-notice admin-notice--error" th:if="${errorMessage}" th:text="${errorMessage}">操作失败。</div>
+
+      <section class="admin-panel">
+        <form th:if="${canManage}" method="post" th:action="@{/admin/storage-config}" class="admin-form">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="operator"
+                 th:value="${currentUser != null ? currentUser.username() : 'system'}">
+
+          <div class="admin-form-row">
+            <label class="admin-form-label" for="pluginDir" th:text="#{admin.storage.pluginDir}">插件目录</label>
+            <p class="admin-muted" th:text="#{admin.storage.pluginDirHint}">上传的插件 JAR 包将存储到此目录。</p>
+            <input class="admin-form-input" type="text" id="pluginDir" name="pluginDir"
+                   th:value="${pluginDir}" required>
+          </div>
+
+          <div class="admin-form-row">
+            <label class="admin-form-label" for="logoDir" th:text="#{admin.storage.logoDir}">Logo 目录</label>
+            <p class="admin-muted" th:text="#{admin.storage.logoDirHint}">上传的 Logo 图片将存储到此目录。</p>
+            <input class="admin-form-input" type="text" id="logoDir" name="logoDir"
+                   th:value="${logoDir}" required>
+          </div>
+
+          <div class="admin-form-actions">
+            <button class="admin-button" type="submit" th:text="#{admin.common.save}">保存设置</button>
+          </div>
+        </form>
+
+        <div th:unless="${canManage}" class="admin-muted" th:text="#{admin.plugin.configuration.readOnly}">
+          当前账号只有查看权限，不能修改存储配置。
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.jnimble.admin.plugin;
 
+import com.jnimble.admin.setting.StorageConfigService;
 import com.jnimble.kernel.plugin.PluginRuntimeService;
 import com.jnimble.kernel.plugin.PluginRuntimeSnapshot;
 import com.jnimble.kernel.plugin.PluginOperationLocks;
@@ -37,13 +38,16 @@ public class PluginJarInstallService {
 
     private final PluginRuntimeService pluginRuntimeService;
     private final PluginInstallProperties properties;
+    private final StorageConfigService storageConfigService;
 
     public PluginJarInstallService(
             PluginRuntimeService pluginRuntimeService,
-            PluginInstallProperties properties
+            PluginInstallProperties properties,
+            StorageConfigService storageConfigService
     ) {
         this.pluginRuntimeService = pluginRuntimeService;
         this.properties = properties;
+        this.storageConfigService = storageConfigService;
     }
 
     /**
@@ -122,12 +126,12 @@ public class PluginJarInstallService {
             }
             return tempPath;
         } catch (IOException ex) {
-            throw new IllegalStateException("Failed to stage plugin jar.", ex);
+            throw new IllegalStateException("Failed to stage plugin jar: " + ex.getMessage(), ex);
         }
     }
 
     private Path moveIntoPluginDirectory(Path stagedPath, PluginDescriptor descriptor) {
-        Path pluginDirectory = Path.of(properties.getDir()).toAbsolutePath().normalize();
+        Path pluginDirectory = Path.of(storageConfigService.resolvePluginDir()).toAbsolutePath().normalize();
         Path storedPath = uniqueStoredPath(pluginDirectory, descriptor);
         if (!storedPath.startsWith(pluginDirectory)) {
             deleteQuietly(stagedPath);
@@ -140,7 +144,7 @@ public class PluginJarInstallService {
             return storedPath;
         } catch (IOException ex) {
             deleteQuietly(stagedPath);
-            throw new IllegalStateException("Failed to store plugin jar.", ex);
+            throw new IllegalStateException("Failed to store plugin jar to " + storedPath + ": " + ex.getMessage(), ex);
         }
     }
 
