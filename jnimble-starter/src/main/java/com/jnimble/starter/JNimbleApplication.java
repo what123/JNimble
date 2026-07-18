@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.jnimble.starter",
         "com.jnimble.admin",
         "com.jnimble.kernel",
-        "com.jnimble.license",
         "com.jnimble.platform"
 })
 @MapperScan(

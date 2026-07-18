@@ -108,7 +108,6 @@ class DefaultPluginRuntimeDependencyTest {
                 null,
                 null,
                 null,
-                null,
                 dependencies,
                 List.of(),
                 null);

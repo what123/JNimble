@@ -47,9 +47,7 @@ mvn -pl jnimble-starter spring-boot:run
 
 - `jnimble-bom`：依赖版本 BOM。
 - `jnimble-plugin-sdk`：插件启动、钩子、路由和资源契约。
-- `jnimble-license-sdk`：许可证校验 SDK（Ed25519 签名）。
 - `jnimble-kernel`：插件运行时、钩子、路由、资源和迁移基础设施。
-- `jnimble-license-core`：许可证存储与校验核心（JDBC 实现）。
 - `jnimble-platform`：用户、角色、权限、审计、国际化、插件状态、系统设置。
 - `jnimble-admin-shell`：管理后台布局、页面、模板和 UI 外壳。
 - `jnimble-starter`：可运行的 Spring Boot 应用。
@@ -61,7 +59,6 @@ mvn -pl jnimble-starter spring-boot:run
 - 权限系统：插件声明权限会同步到角色管理；后台页面强制服务器端权限校验。
 - 数据库迁移：框架 Flyway 迁移在 `db/migration/system`；每个插件拥有独立迁移目录和历史表。
 - 国际化：框架与插件各自维护消息包；后台 UI 默认提供中英文。
-- 许可证校验：插件可选启用 Ed25519 签名的许可证 token，运行时校验。
 - 审计日志：插件、用户、角色权限操作均被记录。
 - 品牌定制：站点名称和 Logo 可通过后台 UI 运行时配置。
 
@@ -114,11 +111,10 @@ mvn -pl jnimble-starter spring-boot:run
 - [Mapper 工具指南](docs/mapper-utils-guide.md)
 - [框架/插件分离设计](doc/framework-plugin-separation-design.md)
 - [插件热插拔运行时](doc/plugin-hot-plug-runtime-design.md)
-- [插件许可证授权](doc/plugin-license-authorization-design.md)
 
 ## 数据库
 
-JNimble 需要 `DataSource`。框架迁移会创建 `jnimble_user`、`jnimble_role`、`jnimble_permission`、`jnimble_role_permission`、`jnimble_subject_role`、`jnimble_audit_log`、`jnimble_plugin_state`、`jnimble_plugin_license`、`jnimble_plugin_configuration`、`jnimble_language` 和 `jnimble_system_setting` 表。
+JNimble 需要 `DataSource`。框架迁移会创建 `jnimble_user`、`jnimble_role`、`jnimble_permission`、`jnimble_role_permission`、`jnimble_subject_role`、`jnimble_audit_log`、`jnimble_plugin_state`、`jnimble_plugin_configuration`、`jnimble_language` 和 `jnimble_system_setting` 表。
 
 平台单表数据访问使用 `MapperUtils`。服务代码不应直接调用 `BaseMapper` CRUD 方法。
 

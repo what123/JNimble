@@ -41,28 +41,13 @@
                 <version>${thymeleaf-layout-dialect.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.jnimble</groupId>
                 <artifactId>jnimble-plugin-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jnimble</groupId>
-                <artifactId>jnimble-license-sdk</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jnimble</groupId>
                 <artifactId>jnimble-kernel</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jnimble</groupId>
-                <artifactId>jnimble-license-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

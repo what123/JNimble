@@ -20,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migration support for system and plugins (Flyway)
 - Internationalization (i18n) support for framework and plugins
 - Hook system with Thymeleaf `jn:hook` dialect
-- License verification SDK (Ed25519) and JDBC-backed license store
 - Plugin configuration with encrypted secret fields
 - System settings (site name and logo) with runtime admin UI
 - Framework design documentation

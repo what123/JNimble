@@ -23,10 +23,6 @@
             <artifactId>jnimble-platform</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jnimble</groupId>
-            <artifactId>jnimble-license-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>

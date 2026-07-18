@@ -104,7 +104,7 @@ class PluginConfigurationControllerTest {
         return new PluginDescriptor(
                 "1.0", "payment", "Payment", null, null, null,
                 "1.0.0", "1.0", null, null, "example.PaymentBoot", null,
-                null, null, null, null,
+                null, null, null,
                 new PluginConfigurationDescriptor(
                         "Payment Settings", null, null, null, List.of(field)),
                 List.of(), null
