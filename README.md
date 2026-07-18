@@ -406,3 +406,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ## License
 
 This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+Questions, bug reports, or feature requests are welcome. Reach the author at **178277164@qq.com**.

@@ -405,3 +405,7 @@ JNimble 需要 `DataSource`。框架迁移会创建 `jnimble_user`、`jnimble_ro
 ## 许可证
 
 本项目采用 Apache License 2.0 许可证 — 详情请查看 [LICENSE](LICENSE) 文件。
+
+## 联系作者
+
+有问题、Bug 反馈或功能建议，欢迎联系作者：**178277164@qq.com**。
