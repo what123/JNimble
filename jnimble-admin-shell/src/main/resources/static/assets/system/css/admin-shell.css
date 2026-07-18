@@ -189,22 +189,6 @@ a {
   gap: 10px;
 }
 
-.admin-shell__license-link {
-  color: var(--admin-muted);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: var(--admin-radius);
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.admin-shell__license-link:hover {
-  color: var(--admin-primary);
-  background: var(--admin-surface-soft);
-}
-
 .admin-shell__eyebrow {
   margin: 0;
   color: var(--admin-muted);
