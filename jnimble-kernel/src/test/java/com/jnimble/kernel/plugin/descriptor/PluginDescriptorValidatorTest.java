@@ -332,7 +332,7 @@ class PluginDescriptorValidatorTest {
         return new PluginDescriptor(
                 "1.0", "example-hello", "Hello Plugin", null, null, null,
                 "1.0.0", "1.0", null, null, "example.HelloPlugin", null,
-                null, null, null, null, configuration, List.of(), null
+                null, null, null, configuration, List.of(), null
         );
     }
 

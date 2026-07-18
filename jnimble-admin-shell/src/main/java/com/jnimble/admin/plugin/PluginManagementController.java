@@ -4,9 +4,6 @@ import com.jnimble.admin.audit.AdminAuditRecorder;
 import com.jnimble.kernel.plugin.PluginRuntimeService;
 import com.jnimble.kernel.plugin.PluginRuntimeSnapshot;
 import com.jnimble.kernel.route.PluginRouteRegistry;
-import com.jnimble.license.core.PluginLicenseService;
-import com.jnimble.license.core.PluginLicenseView;
-import com.jnimble.license.sdk.LicenseStatus;
 import com.jnimble.platform.auth.ControllerAuthorization;
 import com.jnimble.platform.audit.AuditActions;
 import com.jnimble.platform.permission.SystemPermissions;
@@ -47,7 +44,6 @@ public class PluginManagementController {
     private final PluginRuntimeService pluginRuntimeService;
     private final PluginJarInstallService pluginJarInstallService;
     private final PluginRouteRegistry pluginRouteRegistry;
-    private final PluginLicenseService pluginLicenseService;
     private final AdminAuditRecorder auditRecorder;
     private final ControllerAuthorization authorization;
     private final MessageSource messageSource;
@@ -58,7 +54,6 @@ public class PluginManagementController {
      * @param pluginRuntimeService     the plugin runtime service
      * @param pluginJarInstallService  the plugin JAR install service
      * @param pluginRouteRegistry      the plugin route registry
-     * @param pluginLicenseService     the plugin license service
      * @param auditRecorder            the audit recorder
      * @param authorization            the authorization service
      * @param messageSource            the message source for i18n
@@ -67,7 +62,6 @@ public class PluginManagementController {
             PluginRuntimeService pluginRuntimeService,
             PluginJarInstallService pluginJarInstallService,
             PluginRouteRegistry pluginRouteRegistry,
-            PluginLicenseService pluginLicenseService,
             AdminAuditRecorder auditRecorder,
             ControllerAuthorization authorization,
             MessageSource messageSource
@@ -75,7 +69,6 @@ public class PluginManagementController {
         this.pluginRuntimeService = pluginRuntimeService;
         this.pluginJarInstallService = pluginJarInstallService;
         this.pluginRouteRegistry = pluginRouteRegistry;
-        this.pluginLicenseService = pluginLicenseService;
         this.auditRecorder = auditRecorder;
         this.authorization = authorization;
         this.messageSource = messageSource;
@@ -313,17 +306,8 @@ public class PluginManagementController {
         List<PluginRuntimeSnapshot> plugins = pluginRuntimeService.list();
         model.addAttribute("plugins", plugins);
         model.addAttribute("pluginAdminEntries", pluginAdminEntries(plugins));
-        model.addAttribute("pluginLicenseViews", pluginLicenseViews(plugins));
         model.addAttribute("pluginMessages", new PluginMessages(messageSource));
         model.addAttribute("activeNav", "plugins");
-    }
-
-    private Map<String, PluginLicenseView> pluginLicenseViews(List<PluginRuntimeSnapshot> plugins) {
-        Map<String, PluginLicenseView> views = new LinkedHashMap<>();
-        for (PluginRuntimeSnapshot plugin : plugins) {
-            views.put(plugin.pluginId(), pluginLicenseService.view(plugin.descriptor()));
-        }
-        return views;
     }
 
     private Map<String, String> pluginAdminEntries(List<PluginRuntimeSnapshot> plugins) {
@@ -459,19 +443,6 @@ public class PluginManagementController {
                     descriptor.admin().labelKey(),
                     resolve("admin.plugin.action.configure", "Configure")
             );
-        }
-
-        /**
-         * Returns the localized license status label.
-         *
-         * @param status the license status
-         * @return the localized license status label
-         */
-        public String licenseStatus(LicenseStatus status) {
-            if (status == null) {
-                return "-";
-            }
-            return resolve("admin.plugin.license.status." + status.name(), status.name());
         }
 
         private String resolve(String key, String fallback) {

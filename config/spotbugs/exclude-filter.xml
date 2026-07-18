@@ -10,7 +10,7 @@
     <Match>
         <Package name="~.*test.*"/>
     </Match>
-    
+
     <!-- Exclude generated code -->
     <Match>
         <Class name="~.*Generated.*"/>
@@ -18,27 +18,38 @@
     <Match>
         <Package name="~.*generated.*"/>
     </Match>
-    
+
     <!-- Exclude test resources -->
     <Match>
         <Class name="~.*TestPluginBoot"/>
     </Match>
-    
+
     <!-- Exclude Lombok generated code -->
     <Match>
         <Class name="~.*\$.*"/>
     </Match>
-    
+
     <!-- Exclude Spring framework classes -->
     <Match>
         <Class name="~.*Spring.*"/>
     </Match>
-    
+
     <!-- Exclude MyBatis-Plus generated code -->
     <Match>
         <Package name="~.*mapper.*"/>
     </Match>
     <Match>
         <Package name="~.*entity.*"/>
+    </Match>
+
+    <!-- Java records are immutable data carriers; EI_EXPOSE_REP on record
+         collection fields is a false positive because record accessors
+         return the field as-is and the convention is to pass immutable
+         collections to the canonical constructor. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
 </FindBugsFilter>

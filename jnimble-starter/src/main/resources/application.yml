@@ -25,9 +25,6 @@ server:
   port: ${JNIMBLE_SERVER_PORT:8080}
 
 jnimble:
-  licensing:
-    canonical-domain: ${JNIMBLE_LICENSE_DOMAIN:localhost}
-    issuer-url: ${JNIMBLE_LICENSE_ISSUER_URL:}
   branding:
     logo-storage-dir: ${JNIMBLE_BRANDING_LOGO_DIR:./data/branding}
   security:

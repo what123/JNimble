@@ -8,7 +8,6 @@ import com.jnimble.sdk.plugin.PluginConfigurationFieldType;
 import com.jnimble.sdk.plugin.PluginConfigurationOption;
 import com.jnimble.sdk.plugin.PluginDependency;
 import com.jnimble.sdk.plugin.PluginDescriptor;
-import com.jnimble.sdk.plugin.PluginLicenseDescriptor;
 import com.jnimble.sdk.plugin.PluginPermission;
 import com.jnimble.sdk.plugin.PluginSpringDescriptor;
 
@@ -75,7 +74,6 @@ public class PluginDescriptorValidator {
         if (!isBlank(descriptor.id())) {
             validatePermissionCodes(descriptor.id(), descriptor.permissions(), violations);
             validateAdmin(descriptor, violations);
-            validateLicense(descriptor.license(), violations);
             validateSpring(descriptor.spring(), violations);
             validateDependencies(descriptor, violations);
         }
@@ -131,18 +129,6 @@ public class PluginDescriptorValidator {
             if (dependency.required() && isBlank(dependency.version())) {
                 violations.add("dependency version is required for " + pluginId);
             }
-        }
-    }
-
-    private void validateLicense(PluginLicenseDescriptor license, List<String> violations) {
-        if (license == null || !license.required()) {
-            return;
-        }
-        requireNonBlank(license.issuer(), "license issuer", violations);
-        requireNonBlank(license.productCode(), "license productCode", violations);
-        if (!isBlank(license.productCode())
-                && !license.productCode().trim().matches("[a-z][a-z0-9.-]{0,127}")) {
-            violations.add("license productCode is invalid");
         }
     }
 

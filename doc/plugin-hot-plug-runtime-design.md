@@ -28,8 +28,6 @@ V1 不支持以下行为：
 jnimble/
   jnimble-bom
   jnimble-plugin-sdk
-  jnimble-license-sdk
-  jnimble-license-core
   jnimble-kernel
   jnimble-platform
   jnimble-admin-shell

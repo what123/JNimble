@@ -47,9 +47,7 @@ Open `http://localhost:8080/admin` and sign in with `admin` / the password you s
 
 - `jnimble-bom`: dependency version BOM.
 - `jnimble-plugin-sdk`: plugin boot, hook, route, and asset contracts.
-- `jnimble-license-sdk`: license verification SDK (Ed25519 token signatures).
 - `jnimble-kernel`: plugin runtime, hook, route, asset, and migration infrastructure.
-- `jnimble-license-core`: license store and verification core (JDBC-backed).
 - `jnimble-platform`: users, roles, permissions, audit, i18n, plugin state, system settings.
 - `jnimble-admin-shell`: admin layout, pages, templates, and UI shell.
 - `jnimble-starter`: runnable Spring Boot application.
@@ -61,7 +59,6 @@ Open `http://localhost:8080/admin` and sign in with `admin` / the password you s
 - Permission system: plugins declare permissions that are synchronized into role management; admin pages enforce server-side permissions.
 - Database migrations: framework Flyway migrations under `db/migration/system`; each plugin owns its own migration directory and history table.
 - Internationalization: framework and plugins ship their own message bundles; admin UI ships with English and Chinese.
-- License verification: plugins can opt into Ed25519-signed license tokens verified at runtime.
 - Audit logging: plugin, user, and role-permission operations are recorded.
 - Branding: site name and logo are configurable at runtime through the admin UI.
 
@@ -114,11 +111,10 @@ Open `http://localhost:8080/admin` and sign in with `admin` / the password you s
 - [Mapper Utils Guide](docs/mapper-utils-guide.md)
 - [Framework / Plugin Separation](doc/framework-plugin-separation-design.md)
 - [Plugin Hot-Plug Runtime](doc/plugin-hot-plug-runtime-design.md)
-- [Plugin License Authorization](doc/plugin-license-authorization-design.md)
 
 ## Database
 
-JNimble requires a `DataSource`. Framework migrations create `jnimble_user`, `jnimble_role`, `jnimble_permission`, `jnimble_role_permission`, `jnimble_subject_role`, `jnimble_audit_log`, `jnimble_plugin_state`, `jnimble_plugin_license`, `jnimble_plugin_configuration`, `jnimble_language`, and `jnimble_system_setting`.
+JNimble requires a `DataSource`. Framework migrations create `jnimble_user`, `jnimble_role`, `jnimble_permission`, `jnimble_role_permission`, `jnimble_subject_role`, `jnimble_audit_log`, `jnimble_plugin_state`, `jnimble_plugin_configuration`, `jnimble_language`, and `jnimble_system_setting`.
 
 Platform single-table data access uses `MapperUtils`. Service code should not call `BaseMapper` CRUD methods directly.
 

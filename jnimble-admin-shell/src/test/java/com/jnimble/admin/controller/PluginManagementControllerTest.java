@@ -15,7 +15,6 @@ import com.jnimble.admin.plugin.PluginManagementController;
 import com.jnimble.kernel.plugin.PluginRuntimeService;
 import com.jnimble.kernel.plugin.PluginRuntimeSnapshot;
 import com.jnimble.kernel.route.PluginRouteRegistry;
-import com.jnimble.license.core.PluginLicenseService;
 import com.jnimble.platform.auth.ControllerAuthorization;
 import com.jnimble.sdk.plugin.PluginDescriptor;
 import com.jnimble.sdk.plugin.PluginStatus;
@@ -53,9 +52,6 @@ class PluginManagementControllerTest {
     private PluginRouteRegistry pluginRouteRegistry;
 
     @Mock
-    private PluginLicenseService pluginLicenseService;
-
-    @Mock
     private AdminAuditRecorder auditRecorder;
 
     @Mock
@@ -68,7 +64,7 @@ class PluginManagementControllerTest {
     void setUp() {
         PluginManagementController controller = new PluginManagementController(
                 pluginRuntimeService, pluginJarInstallService, pluginRouteRegistry,
-                pluginLicenseService, auditRecorder, authorization, messageSource);
+                auditRecorder, authorization, messageSource);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

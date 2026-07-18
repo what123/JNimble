@@ -52,7 +52,7 @@ public class PluginDirectoryWatcher implements SmartLifecycle {
     });
 
     private volatile boolean running;
-    private WatchService watchService;
+    private volatile WatchService watchService;
     private Thread watcherThread;
 
     public PluginDirectoryWatcher(
@@ -265,7 +265,8 @@ public class PluginDirectoryWatcher implements SmartLifecycle {
     }
 
     private Path stage(Path source, String fingerprint) throws IOException {
-        String fileName = source.getFileName().toString();
+        Path sourceName = source.getFileName();
+        String fileName = sourceName != null ? sourceName.toString() : "plugin";
         int extension = fileName.toLowerCase(java.util.Locale.ROOT).lastIndexOf(".jar");
         String baseName = extension < 0 ? fileName : fileName.substring(0, extension);
         Path staged = cacheDirectory().resolve(baseName + "-" + fingerprint.substring(0, 16) + ".jar");
@@ -310,7 +311,11 @@ public class PluginDirectoryWatcher implements SmartLifecycle {
     }
 
     private boolean isJar(Path path) {
-        return path != null
-                && path.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".jar");
+        if (path == null) {
+            return false;
+        }
+        Path fileName = path.getFileName();
+        return fileName != null
+                && fileName.toString().toLowerCase(java.util.Locale.ROOT).endsWith(".jar");
     }
 }

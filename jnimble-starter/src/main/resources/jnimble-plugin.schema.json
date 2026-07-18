@@ -3,7 +3,14 @@
   "$id": "https://jnimble.local/schema/jnimble-plugin.schema.json",
   "title": "JNimble Plugin Descriptor",
   "type": "object",
-  "required": ["schemaVersion", "id", "name", "version", "platformVersion", "bootClass"],
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "version",
+    "platformVersion",
+    "bootClass"
+  ],
   "properties": {
     "schemaVersion": {
       "type": "string",
@@ -57,23 +64,22 @@
     "admin": {
       "type": "object",
       "properties": {
-        "entry": {"type": "string"},
-        "labelKey": {"type": "string"},
-        "permission": {"type": "string"}
-      }
-    },
-    "license": {
-      "type": "object",
-      "properties": {
-        "required": {"type": "boolean"},
-        "issuer": {"type": "string"},
-        "productCode": {"type": "string"},
-        "policy": {"type": "string"}
+        "entry": {
+          "type": "string"
+        },
+        "labelKey": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string"
+        }
       }
     },
     "spring": {
       "type": "object",
-      "required": ["configurationClass"],
+      "required": [
+        "configurationClass"
+      ],
       "properties": {
         "configurationClass": {
           "type": "string",
@@ -85,7 +91,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["pluginId", "required"],
+        "required": [
+          "pluginId",
+          "required"
+        ],
         "properties": {
           "pluginId": {
             "type": "string",
@@ -104,7 +113,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["code", "name"],
+        "required": [
+          "code",
+          "name"
+        ],
         "properties": {
           "code": {
             "type": "string",
