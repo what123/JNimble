@@ -66,6 +66,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Install reactor artifacts
+        run: mvn -B install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true
+
       - name: Run Checkstyle
         run: mvn -B checkstyle:check
 
