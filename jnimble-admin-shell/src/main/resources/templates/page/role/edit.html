@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>编辑角色</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title">编辑角色</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow">Role</p>
+          <h2 th:text="${role.name()}">角色名称</h2>
+        </div>
+        <a class="admin-link" th:href="@{/admin/roles}">返回角色列表</a>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${message}" th:text="${message}">权限配置已保存。</div>
+      <div class="admin-notice admin-notice--error" th:if="${error}" th:text="${error}">失败原因。</div>
+
+      <form class="admin-form" method="post" th:action="@{/admin/roles/{roleId}/permissions(roleId=${role.id()})}">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <label>
+          <span>角色名称</span>
+          <input name="name" required maxlength="255" autocomplete="off"
+                 th:value="${role.name()}">
+        </label>
+
+        <section class="admin-permission-group" th:each="group : ${permissionGroups}">
+          <div class="admin-permission-group__header" th:text="${group.pluginId()}">plugin-id</div>
+          <label class="admin-permission-row"
+                 th:each="permission : ${group.permissions()}"
+                 th:classappend="${!permission.available()} ? ' admin-permission-row--unavailable' : ''">
+            <span>
+              <strong th:text="${permission.displayName(messageSource)}">权限名称</strong>
+              <span class="admin-badge admin-badge--danger" th:if="${!permission.available()}">不可用</span>
+              <br>
+              <span class="admin-code" th:text="${permission.code()}">permission.code</span>
+            </span>
+            <input type="checkbox"
+                   name="permissionCodes"
+                   th:value="${permission.code()}"
+                   th:checked="${permission.granted()}"
+                   th:disabled="${!permission.available()}">
+          </label>
+        </section>
+
+        <section class="admin-panel" th:if="${#lists.isEmpty(permissionGroups)}">
+          <div class="admin-panel__header">
+            <h2>暂无插件权限</h2>
+            <p>插件声明权限后，会由系统统一收录，并显示在这里分配给角色。</p>
+          </div>
+        </section>
+
+        <div class="admin-form-actions">
+          <a class="admin-button admin-button--secondary" th:href="@{/admin/roles}">取消</a>
+          <button class="admin-button" type="submit">保存修改</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

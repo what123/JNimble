@@ -1,0 +1,18 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <form class="admin-language-switcher" method="get" th:fragment="switcher">
+    <label>
+      <span class="admin-visually-hidden" th:text="#{admin.language.label}">Language</span>
+      <select class="admin-language-switcher__select" name="lang" onchange="this.form.submit()"
+              th:attr="aria-label=#{admin.language.label}">
+        <option th:each="language : ${availableLanguages}"
+                th:value="${language.code()}"
+                th:selected="${language.localeTag().equalsIgnoreCase(#locale.toLanguageTag())}"
+                th:text="${language.nativeName() + ' · ' + language.name()}">简体中文 · Chinese</option>
+      </select>
+    </label>
+    <noscript><button type="submit" th:text="#{admin.language.apply}">Apply</button></noscript>
+  </form>
+</body>
+</html>

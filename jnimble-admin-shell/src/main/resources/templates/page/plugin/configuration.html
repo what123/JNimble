@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN"
+      th:lang="${#locale.language}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${configurationTitle}">插件参数配置</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="${configurationTitle}">插件参数配置</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section admin-plugin-configuration-page">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow" th:text="${pluginName}">插件名称</p>
+          <h2 th:text="${configurationTitle}">插件参数配置</h2>
+          <p class="admin-muted" th:if="${configurationDescription != null and !configurationDescription.isBlank()}"
+             th:text="${configurationDescription}">由插件描述文件声明，框架自动生成。</p>
+        </div>
+        <div class="admin-actions">
+          <a class="admin-button admin-button--secondary" th:href="@{/admin/plugins}"
+             th:text="#{admin.plugin.configuration.back}">返回插件列表</a>
+        </div>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${message}" th:text="${message}">保存成功。</div>
+      <div class="admin-notice admin-notice--error" th:if="${error}" th:text="${error}">保存失败。</div>
+
+      <section class="admin-panel">
+        <div class="admin-panel__header">
+          <h2 th:text="#{admin.plugin.configuration.parameters}">配置参数</h2>
+          <p th:text="#{admin.plugin.configuration.generatedHint}">以下表单由插件描述文件自动生成。</p>
+        </div>
+        <form class="admin-form admin-plugin-configuration-form" method="post"
+              th:action="@{/admin/plugin-configurations/{pluginId}(pluginId=${configPluginId})}">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+          <div class="admin-plugin-configuration-fields">
+            <div class="admin-plugin-configuration-field" th:each="field : ${configurationFields}">
+              <label th:if="${field.type().name() != 'BOOLEAN'}">
+                <span class="admin-plugin-configuration-field__label">
+                  <span th:text="${field.label()}">参数名称</span>
+                  <em th:if="${field.required()}" th:text="#{admin.plugin.configuration.required}">必填</em>
+                </span>
+
+                <input th:if="${field.type().name() == 'TEXT'}"
+                       type="text"
+                       th:name="${'field.' + field.key()}"
+                       th:value="${field.value()}"
+                       th:placeholder="${field.placeholder()}"
+                       th:required="${field.required()}"
+                       th:disabled="${!canManagePlugins}">
+
+                <input th:if="${field.type().name() == 'SECRET'}"
+                       type="password"
+                       autocomplete="new-password"
+                       th:name="${'field.' + field.key()}"
+                       th:placeholder="${field.placeholder()}"
+                       th:required="${field.required() and !field.configured()}"
+                       th:disabled="${!canManagePlugins}">
+
+                <input th:if="${field.type().name() == 'NUMBER'}"
+                       type="number"
+                       step="any"
+                       th:name="${'field.' + field.key()}"
+                       th:value="${field.value()}"
+                       th:placeholder="${field.placeholder()}"
+                       th:required="${field.required()}"
+                       th:disabled="${!canManagePlugins}">
+
+                <select th:if="${field.type().name() == 'SELECT'}"
+                        th:name="${'field.' + field.key()}"
+                        th:required="${field.required()}"
+                        th:disabled="${!canManagePlugins}">
+                  <option value="" th:if="${!field.required()}"
+                          th:text="#{admin.plugin.configuration.selectPlaceholder}">请选择</option>
+                  <option th:each="option : ${field.options()}"
+                          th:value="${option.value()}"
+                          th:text="${option.label()}"
+                          th:selected="${option.value() == field.value()}">选项</option>
+                </select>
+
+                <textarea th:if="${field.type().name() == 'TEXTAREA'}"
+                          rows="5"
+                          th:name="${'field.' + field.key()}"
+                          th:text="${field.value()}"
+                          th:placeholder="${field.placeholder()}"
+                          th:required="${field.required()}"
+                          th:disabled="${!canManagePlugins}"></textarea>
+              </label>
+
+              <label class="admin-checkbox-field admin-plugin-configuration-boolean"
+                     th:if="${field.type().name() == 'BOOLEAN'}">
+                <input type="hidden" th:name="${'field.' + field.key()}" value="false"
+                       th:disabled="${!canManagePlugins}">
+                <input type="checkbox" th:name="${'field.' + field.key()}" value="true"
+                       th:checked="${field.value() == 'true'}"
+                       th:disabled="${!canManagePlugins}">
+                <span>
+                  <strong th:text="${field.label()}">开关参数</strong>
+                  <small th:if="${field.description() != null and !field.description().isBlank()}"
+                         th:text="${field.description()}">参数说明</small>
+                </span>
+              </label>
+
+              <p class="admin-plugin-configuration-field__help"
+                 th:if="${field.type().name() != 'BOOLEAN' and field.description() != null and !field.description().isBlank()}"
+                 th:text="${field.description()}">参数说明</p>
+              <p class="admin-plugin-configuration-field__configured"
+                 th:if="${field.type().name() == 'SECRET' and field.configured()}"
+                 th:text="#{admin.plugin.configuration.secretStored}">密钥已安全保存</p>
+            </div>
+          </div>
+
+          <div class="admin-form-actions" th:if="${canManagePlugins}">
+            <a class="admin-button admin-button--secondary" th:href="@{/admin/plugins}"
+               th:text="#{admin.plugin.configuration.cancel}">取消</a>
+            <button class="admin-button" type="submit"
+                    th:text="#{admin.plugin.configuration.save}">保存配置</button>
+          </div>
+          <div class="admin-notice" th:if="${!canManagePlugins}"
+               th:text="#{admin.plugin.configuration.readOnly}">当前账号只有查看权限。</div>
+        </form>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jnimble.local/schema/jnimble-plugin.schema.json",
+  "title": "JNimble Plugin Descriptor",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "version", "platformVersion", "bootClass"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nameKey": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "descriptionKey": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platformVersion": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(\\*|\\d+(\\.\\d+){0,2}|\\d+\\.\\d+\\.x|>=\\s*\\d+(\\.\\d+){0,2})$"
+    },
+    "author": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "bootClass": {
+      "type": "string",
+      "minLength": 1
+    },
+    "i18n": {
+      "type": "object",
+      "properties": {
+        "basename": {
+          "type": "string"
+        }
+      }
+    },
+    "admin": {
+      "type": "object",
+      "properties": {
+        "entry": {"type": "string"},
+        "labelKey": {"type": "string"},
+        "permission": {"type": "string"}
+      }
+    },
+    "license": {
+      "type": "object",
+      "properties": {
+        "required": {"type": "boolean"},
+        "issuer": {"type": "string"},
+        "productCode": {"type": "string"},
+        "policy": {"type": "string"}
+      }
+    },
+    "spring": {
+      "type": "object",
+      "required": ["configurationClass"],
+      "properties": {
+        "configurationClass": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pluginId", "required"],
+        "properties": {
+          "pluginId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "version": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nameKey": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "descriptionKey": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "location": {
+          "type": "string"
+        },
+        "table": {
+          "type": "string"
+        },
+        "baselineOnMigrate": {
+          "type": "boolean"
+        },
+        "failOnError": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

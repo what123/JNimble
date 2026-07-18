@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{admin.settings.title}">系统设置</title>
+</head>
+<body>
+  <h1 layout:fragment="page-title" th:text="#{admin.settings.title}">系统设置</h1>
+
+  <main layout:fragment="content">
+    <section class="admin-page-section">
+      <div class="admin-page-section__header">
+        <div>
+          <p class="admin-shell__eyebrow" th:text="#{admin.layout.section.system}">系统管理</p>
+          <h2 th:text="#{admin.settings.heading}">网站品牌</h2>
+          <p class="admin-muted" th:text="#{admin.settings.description}">设置后台和登录页显示的网站名称、副标题和 Logo。</p>
+        </div>
+      </div>
+
+      <div class="admin-notice admin-notice--success" th:if="${successMessage}" th:text="${successMessage}">已保存。</div>
+      <div class="admin-notice admin-notice--error" th:if="${errorMessage}" th:text="${errorMessage}">操作失败。</div>
+
+      <section class="admin-panel">
+        <form th:if="${canManage}" method="post" th:action="@{/admin/system-settings}"
+              enctype="multipart/form-data" class="admin-form">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="operator"
+                 th:value="${currentUser != null ? currentUser.username() : 'system'}">
+
+          <div class="admin-form-row">
+            <label class="admin-form-label" for="siteName" th:text="#{admin.settings.siteName}">网站名称</label>
+            <input class="admin-form-input" type="text" id="siteName" name="siteName"
+                   th:value="${siteName}" th:placeholder="#{admin.settings.siteNamePlaceholder}" required>
+          </div>
+
+          <div class="admin-form-row">
+            <label class="admin-form-label" for="siteSubtitle" th:text="#{admin.settings.siteSubtitle}">副标题</label>
+            <input class="admin-form-input" type="text" id="siteSubtitle" name="siteSubtitle"
+                   th:value="${siteSubtitle}" th:placeholder="#{admin.settings.siteSubtitlePlaceholder}">
+          </div>
+
+          <div class="admin-form-row">
+            <label class="admin-form-label" th:text="#{admin.settings.logo}">网站 Logo</label>
+            <p class="admin-muted" th:text="#{admin.settings.logoHint}">支持 JPG、PNG、GIF、WebP 或 SVG，不超过 2MB。</p>
+
+            <div class="admin-logo-preview" th:if="${logoUrl != null and !logoUrl.isEmpty()}">
+              <span class="admin-form-hint" th:text="#{admin.settings.logoCurrent}">当前 Logo</span>
+              <img th:src="${logoUrl}" alt="Logo" class="admin-logo-img">
+            </div>
+
+            <label class="admin-form-label" for="logo" th:text="#{admin.settings.logoUpload}">上传新 Logo</label>
+            <input class="admin-form-input" type="file" id="logo" name="logo"
+                   accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml">
+
+            <label class="admin-form-checkbox" th:if="${logoUrl != null and !logoUrl.isEmpty()}">
+              <input type="checkbox" name="removeLogo" value="true">
+              <span th:text="#{admin.settings.logoRemove}">移除 Logo</span>
+            </label>
+          </div>
+
+          <div class="admin-form-actions">
+            <button class="admin-button" type="submit" th:text="#{admin.settings.save}">保存设置</button>
+          </div>
+        </form>
+
+        <div th:unless="${canManage}" class="admin-muted" th:text="#{admin.plugin.configuration.readOnly}">
+          当前账号只有查看权限，不能修改系统设置。
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

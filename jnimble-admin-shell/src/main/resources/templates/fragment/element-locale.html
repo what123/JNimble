@@ -1,0 +1,14 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <th:block th:fragment="scripts">
+    <script th:if="${#locale.language == 'en'}"
+            src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/umd/locale/en.js"></script>
+    <script th:if="${#locale.language == 'en'}">
+      if (window.ELEMENT && window.ELEMENT.lang && window.ELEMENT.lang.en) {
+        window.ELEMENT.locale(window.ELEMENT.lang.en);
+      }
+    </script>
+  </th:block>
+</body>
+</html>
