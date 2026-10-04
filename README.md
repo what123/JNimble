@@ -382,6 +382,26 @@ Run `mvn -pl jnimble-demo-plugin package`, drop the JAR into the plugin director
 | `jnimble-starter` | Runnable Spring Boot application. |
 | `jnimble-demo-plugin` | Minimal demo plugin showing sidebar menu and route registration. |
 
+## Ecosystem
+
+Business capabilities are delivered as independent plugins. A reference plugin set (an ordering / POS system) lives in a separate repository:
+
+- **Plugin repository**: <https://github.com/what123/jnimble-order-plugin>
+
+| Plugin | Description |
+|--------|-------------|
+| `menu-manager` | Menu / item / specification management. |
+| `order-core` | Order core (orders, kitchen queue, status machine). |
+| `order-table` | Table ordering (table map, seat routing). |
+| `payment` | Payment aggregation and reconciliation. |
+| `printer-core` | Printer abstraction and templates. |
+| `printer-feie` | Feie cloud printer driver. |
+| `scan-consumer` | Consumer-facing scan-to-order API. |
+| `demo-crm` | Example CRM plugin. |
+| `license-issuer` | License issuing admin UI. |
+
+To assemble a runnable ordering system (framework + plugins), see **[docs/blueprints/ordering-system.md](docs/blueprints/ordering-system.md)**.
+
 ## Features
 
 - **Plugin lifecycle**: install, enable, disable, uninstall, reload — via JAR upload, classpath, or hot-deploy directory.

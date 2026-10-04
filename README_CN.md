@@ -381,6 +381,26 @@ mvn -pl my-plugin package
 | `jnimble-starter` | 可运行的 Spring Boot 应用。 |
 | `jnimble-demo-plugin` | 极简示例插件，演示菜单注册和页面路由。 |
 
+## 生态与示例插件
+
+业务能力都以独立插件交付。一套参考插件（点餐 / POS 系统）在独立仓库维护：
+
+- **插件仓库**：<https://github.com/what123/jnimble-order-plugin>
+
+| 插件 | 说明 |
+|------|------|
+| `menu-manager` | 菜单 / 菜品 / 规格管理。 |
+| `order-core` | 点餐核心（订单、后厨排队、状态机）。 |
+| `order-table` | 桌台点餐（桌位图、座位路由）。 |
+| `payment` | 支付聚合与对账。 |
+| `printer-core` | 打印机抽象与模板。 |
+| `printer-feie` | 飞鹅云打印机驱动。 |
+| `scan-consumer` | 面向消费者的扫码点餐 API。 |
+| `demo-crm` | CRM 示例插件。 |
+| `license-issuer` | License 签发后台。 |
+
+如何用"框架 + 插件"组装一套可运行的点餐系统，见 **[docs/blueprints/ordering-system.md](docs/blueprints/ordering-system.md)**。
+
 ## 功能特性
 
 - **插件生命周期**：安装、启用、禁用、卸载、重载 —— 支持 JAR 上传、classpath、目录热部署三种发现方式。
