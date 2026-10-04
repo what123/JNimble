@@ -398,7 +398,6 @@ Business capabilities are delivered as independent plugins. A reference plugin s
 | `printer-feie` | Feie cloud printer driver. |
 | `scan-consumer` | Consumer-facing scan-to-order API. |
 | `demo-crm` | Example CRM plugin. |
-| `license-issuer` | License issuing admin UI. |
 
 To assemble a runnable ordering system (framework + plugins), see **[docs/blueprints/ordering-system.md](docs/blueprints/ordering-system.md)**.
 

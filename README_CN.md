@@ -397,7 +397,6 @@ mvn -pl my-plugin package
 | `printer-feie` | 飞鹅云打印机驱动。 |
 | `scan-consumer` | 面向消费者的扫码点餐 API。 |
 | `demo-crm` | CRM 示例插件。 |
-| `license-issuer` | License 签发后台。 |
 
 如何用"框架 + 插件"组装一套可运行的点餐系统，见 **[docs/blueprints/ordering-system.md](docs/blueprints/ordering-system.md)**。
 
