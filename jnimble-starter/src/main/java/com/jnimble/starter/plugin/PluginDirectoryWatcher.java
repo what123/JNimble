@@ -19,6 +19,7 @@ import java.nio.file.WatchService;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -216,41 +217,72 @@ public class PluginDirectoryWatcher implements SmartLifecycle {
             rollbackArtifact = previous.artifactPath();
         }
         boolean wasEnabled = previous.status() == PluginStatus.ENABLED;
+        // 受影响集合:目标插件 + 其(递归)已启用依赖者,按"依赖优先"排序(启用顺序)。
+        List<String> affected = wasEnabled
+                ? affectedEnableOrder(previous.pluginId())
+                : List.of(previous.pluginId());
         try {
-            if (wasEnabled) {
-                runtimeService.disable(previous.pluginId());
+            // 1) 先按逆序禁用(依赖者在前),否则被依赖的插件不允许禁用。
+            for (int i = affected.size() - 1; i >= 0; i--) {
+                disableIfEnabled(affected.get(i));
             }
+            // 2) 替换目标插件(此刻目标已被禁用)。
             runtimeService.replace(replacement, replacementArtifact);
+            // 3) 按依赖顺序重新启用(目标在前,依赖者随后)。
             if (wasEnabled || properties.isAutoEnable()) {
-                runtimeService.enable(replacement.id());
+                for (String pluginId : affected) {
+                    runtimeService.enable(pluginId);
+                }
             }
             cachedArtifacts.put(sourceArtifact, replacementArtifact);
             fingerprints.put(sourceArtifact, replacementFingerprint);
-            log.info("Hot-replaced plugin {} from {}", replacement.id(), sourceArtifact);
+            log.info("Hot-replaced plugin {} from {} (cascade over {} plugin(s))",
+                    replacement.id(), sourceArtifact, affected.size());
         } catch (RuntimeException replacementFailure) {
-            rollback(previous, rollbackArtifact, wasEnabled, replacementFailure);
+            rollbackCascade(previous, rollbackArtifact, affected, replacementFailure);
             throw replacementFailure;
         }
     }
 
-    private void rollback(
+    private void disableIfEnabled(String pluginId) {
+        PluginRuntimeSnapshot snapshot = runtimeService.find(pluginId).orElse(null);
+        if (snapshot != null && snapshot.status() == PluginStatus.ENABLED) {
+            runtimeService.disable(pluginId);
+        }
+    }
+
+    private List<String> affectedEnableOrder(String rootId) {
+        return PluginCascade.affectedEnableOrder(rootId, runtimeService.list());
+    }
+
+    private void rollbackCascade(
             PluginRuntimeSnapshot previous,
             Path rollbackArtifact,
-            boolean wasEnabled,
+            List<String> affected,
             RuntimeException replacementFailure
     ) {
+        if (rollbackArtifact == null) {
+            log.warn("No rollback artifact available for {}", previous.pluginId(), replacementFailure);
+            return;
+        }
         try {
-            PluginRuntimeSnapshot current = runtimeService.find(previous.pluginId()).orElse(null);
-            if (current != null && current.status() == PluginStatus.ENABLED) {
+            try {
                 runtimeService.disable(previous.pluginId());
+            } catch (RuntimeException ignored) {
+                // Target may already be disabled/installed; proceed to restore the artifact.
             }
             runtimeService.replace(previous.descriptor(), rollbackArtifact);
-            if (wasEnabled) {
-                runtimeService.enable(previous.pluginId());
+            for (String pluginId : affected) {
+                try {
+                    runtimeService.enable(pluginId);
+                } catch (RuntimeException enableFailure) {
+                    replacementFailure.addSuppressed(enableFailure);
+                }
             }
-            log.warn("Rolled back failed plugin replacement: {}", previous.pluginId());
+            log.warn("Rolled back failed hot-replace of {}", previous.pluginId());
         } catch (RuntimeException rollbackFailure) {
             replacementFailure.addSuppressed(rollbackFailure);
+            log.warn("Rollback failed for {}", previous.pluginId(), rollbackFailure);
         }
     }
 
