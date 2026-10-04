@@ -10,6 +10,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Spring Security configuration for the JNimble platform.
@@ -38,8 +43,11 @@ public class JNimbleSecurityConfiguration {
     @Bean
     SecurityFilterChain jnimbleSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/plugins/**"))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/error", "/actuator/health", "/assets/system/**").permitAll()
+                        .requestMatchers("/login", "/error", "/actuator/health", "/assets/system/**",
+                                "/admin/system-settings/logo/**").permitAll()
                         .requestMatchers("/admin", "/admin/**").authenticated()
                         .anyRequest().permitAll())
                 .formLogin(form -> form
@@ -51,6 +59,18 @@ public class JNimbleSecurityConfiguration {
                         .logoutSuccessUrl("/login?logout")
                         .permitAll())
                 .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     /**
