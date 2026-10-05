@@ -387,6 +387,7 @@ Run `mvn -pl jnimble-demo-plugin package`, drop the JAR into the plugin director
 Business capabilities are delivered as independent plugins. A reference plugin set (an ordering / POS system) lives in a separate repository:
 
 - **Plugin repository**: <https://github.com/what123/jnimble-order-plugin>
+- 📸 **See it in action**: [POS / orders / kitchen screenshots](https://github.com/what123/jnimble-order-plugin#preview)
 
 | Plugin | Description |
 |--------|-------------|

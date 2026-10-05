@@ -386,6 +386,7 @@ mvn -pl my-plugin package
 业务能力都以独立插件交付。一套参考插件（点餐 / POS 系统）在独立仓库维护：
 
 - **插件仓库**：<https://github.com/what123/jnimble-order-plugin>
+- 📸 **点餐效果预览**：[收银点餐 / 订单 / 后厨 / 菜品 截图](https://github.com/what123/jnimble-order-plugin#界面预览)
 
 | 插件 | 说明 |
 |------|------|
