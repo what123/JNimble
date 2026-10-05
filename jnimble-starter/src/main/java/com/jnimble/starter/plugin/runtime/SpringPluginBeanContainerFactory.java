@@ -3,12 +3,18 @@ package com.jnimble.starter.plugin.runtime;
 import com.jnimble.kernel.plugin.PluginBeanContainer;
 import com.jnimble.kernel.plugin.PluginBeanContainerFactory;
 import com.jnimble.kernel.plugin.PluginBeanResolver;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.jnimble.kernel.plugin.PluginRuntimeException;
 import com.jnimble.sdk.plugin.PluginDescriptor;
 import com.jnimble.sdk.plugin.PluginSpringDescriptor;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.sql.DataSource;
+import org.apache.ibatis.plugin.Interceptor;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
@@ -28,6 +34,8 @@ public class SpringPluginBeanContainerFactory implements PluginBeanContainerFact
 
     private final ApplicationContext platformContext;
     private final PluginMvcEndpointRegistrar mvcRegistrar;
+    private final DataSource dataSource;
+    private final SqlSessionFactory platformSqlSessionFactory;
 
     public SpringPluginBeanContainerFactory(
             ApplicationContext platformContext,
@@ -35,6 +43,9 @@ public class SpringPluginBeanContainerFactory implements PluginBeanContainerFact
     ) {
         this.platformContext = platformContext;
         this.mvcRegistrar = mvcRegistrar;
+        this.dataSource = platformContext.getBeanProvider(DataSource.class).getIfAvailable();
+        this.platformSqlSessionFactory =
+                platformContext.getBeanProvider(SqlSessionFactory.class).getIfAvailable();
     }
 
     @Override
@@ -54,6 +65,18 @@ public class SpringPluginBeanContainerFactory implements PluginBeanContainerFact
         context.setClassLoader(classLoader);
         context.getBeanFactory().setBeanClassLoader(classLoader);
         registerDependencyBeans(context, dependencies);
+        if (dataSource != null) {
+            // Isolate plugin MyBatis state per class loader: mapper/entity classes from a previous
+            // incarnation must not leak across hot reloads. Register both a plugin-scoped
+            // SqlSessionFactory and SqlSessionTemplate so mapper beans use them instead of the
+            // shared (platform) ones.
+            context.registerBean("sqlSessionFactory", SqlSessionFactory.class,
+                    this::createPluginSqlSessionFactory,
+                    beanDefinition -> beanDefinition.setPrimary(true));
+            context.registerBean("sqlSessionTemplate", SqlSessionTemplate.class,
+                    () -> new SqlSessionTemplate(context.getBean(SqlSessionFactory.class)),
+                    beanDefinition -> beanDefinition.setPrimary(true));
+        }
         try {
             Class<?> configurationClass = Class.forName(
                     spring.configurationClass().trim(),
@@ -67,6 +90,27 @@ public class SpringPluginBeanContainerFactory implements PluginBeanContainerFact
             throw new PluginRuntimeException(
                     "Failed to create Spring container for plugin " + descriptor.id(),
                     ex);
+        }
+    }
+
+    private SqlSessionFactory createPluginSqlSessionFactory() {
+        MybatisSqlSessionFactoryBean factoryBean = new MybatisSqlSessionFactoryBean();
+        factoryBean.setDataSource(dataSource);
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        if (platformSqlSessionFactory != null) {
+            org.apache.ibatis.session.Configuration platform =
+                    platformSqlSessionFactory.getConfiguration();
+            configuration.setMapUnderscoreToCamelCase(platform.isMapUnderscoreToCamelCase());
+            if (!platform.getInterceptors().isEmpty()) {
+                factoryBean.setPlugins(platform.getInterceptors().toArray(new Interceptor[0]));
+            }
+        }
+        factoryBean.setConfiguration(configuration);
+        try {
+            return factoryBean.getObject();
+        } catch (Exception ex) {
+            throw new PluginRuntimeException(
+                    "Failed to create plugin MyBatis SqlSessionFactory", ex);
         }
     }
 
